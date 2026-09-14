@@ -1,149 +1,20 @@
 (function () {
 
-    const CONFIG_KEY = "vobSettings";
-
-    function openSettings() {
-
-        if (document.getElementById("vobPopup")) return;
-
-        const popup = document.createElement("div");
-
-        popup.id = "vobPopup";
-
-        popup.style.cssText = `
-            position:fixed;
-            top:50%;
-            left:50%;
-            transform:translate(-50%,-50%);
-            z-index:999999;
-            background:#fff;
-            border:1px solid #ccc;
-            border-radius:8px;
-            padding:15px;
-            width:350px;
-            box-shadow:0 2px 10px rgba(0,0,0,.3);
-            font-family:Arial,sans-serif;
-        `;
-
-        const saved =
-            JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
-
-        popup.innerHTML = `
-            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-                <b>VOB/PT Settings</b>
-                <button id="vobClose">✕</button>
-            </div>
-
-            <div style="margin-bottom:10px;">
-                <label>Initials</label>
-                <input id="vobInitials"
-                    value="${saved.initials || ""}"
-                    style="width:100%;padding:4px;">
-            </div>
-
-            <div style="margin-bottom:10px;">
-                <label>Mode</label>
-                <div>
-                    <button id="modeVOB">VOB</button>
-                    <button id="modePT">PT</button>
-                </div>
-            </div>
-
-            <div id="ptSection">
-                <select id="ptComment" style="width:100%;">
-                    <option>Reviewed. Eligible. IDR Initiation document attached.</option>
-                    <option>Reviewed, no action required.</option>
-                </select>
-            </div>
-
-            <button
-                id="vobSave"
-                style="width:100%;margin-top:10px;">
-                Save
-            </button>
-        `;
-
-        document.body.appendChild(popup);
-
-        let mode = saved.mode || "VOB";
-
-        const ptSection =
-            document.getElementById("ptSection");
-
-        function refreshMode() {
-
-            ptSection.style.display =
-                mode === "PT"
-                    ? "block"
-                    : "none";
-        }
-
-        refreshMode();
-
-        document.getElementById("modeVOB")
-            .onclick = () => {
-                mode = "VOB";
-                refreshMode();
-            };
-
-        document.getElementById("modePT")
-            .onclick = () => {
-                mode = "PT";
-                refreshMode();
-            };
-
-        document.getElementById("vobClose")
-            .onclick = () => popup.remove();
-
-        document.getElementById("vobSave")
-            .onclick = () => {
-
-                const initials =
-                    document.getElementById("vobInitials")
-                        .value
-                        .trim()
-                        .toUpperCase();
-
-                if (!initials) {
-                    alert("Initials required.");
-                    return;
-                }
-
-                localStorage.setItem(
-                    CONFIG_KEY,
-                    JSON.stringify({
-                        initials: initials,
-                        mode: mode,
-                        ptComment: document.getElementById("ptComment").value
-                    })
-                );
-
-                popup.remove();
-
-                insertComment();
-            };
-    }
+    const CONFIG_KEY = "VOB_CONFIG";
 
     function getPCDate() {
-
         const d = new Date();
-
         const mm = String(d.getMonth() + 1).padStart(2, "0");
         const dd = String(d.getDate()).padStart(2, "0");
         const yy = String(d.getFullYear()).slice(-2);
-
         return `${mm}/${dd}/${yy}`;
     }
 
     function getPHDate() {
-
         const d = new Date(
-            new Date().toLocaleString(
-                "en-US",
-                {
-                    timeZone: "Asia/Manila"
-                }
-            )
+            new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Manila"
+            })
         );
 
         const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -153,10 +24,22 @@
         return `${mm}/${dd}/${yy}`;
     }
 
+    function getConfig() {
+        return JSON.parse(
+            localStorage.getItem(CONFIG_KEY) || "{}"
+        );
+    }
+
+    function saveConfig(cfg) {
+        localStorage.setItem(
+            CONFIG_KEY,
+            JSON.stringify(cfg)
+        );
+    }
+
     function insertComment() {
 
-        const cfg =
-            JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
+        const cfg = getConfig();
 
         if (!cfg.initials) {
             openSettings();
@@ -167,19 +50,28 @@
             "#ngForm > fieldset > div:nth-child(1) > div:nth-child(1) > div:nth-child(6) > textarea"
         );
 
-        if (!el) return;
+        if (!el) {
+            alert("Textarea not found");
+            return;
+        }
 
         let note = "";
 
-        if (cfg.mode === "VOB") {
+        if (cfg.mode === "PT") {
 
             note =
-                `${getPCDate()} VOB verified, no change to NSA jurisdiction - ${cfg.initials}`;
+                cfg.ptComment +
+                " - " +
+                getPHDate() +
+                " - " +
+                cfg.initials;
 
         } else {
 
             note =
-                `${cfg.ptComment} - ${getPHDate()} - ${cfg.initials}`;
+                getPCDate() +
+                " VOB verified, no change to NSA jurisdiction - " +
+                cfg.initials;
         }
 
         if (
@@ -187,6 +79,7 @@
                 .toLowerCase()
                 .includes(note.toLowerCase())
         ) {
+
             console.log("Duplicate prevented");
             return;
         }
@@ -210,14 +103,190 @@
         );
     }
 
-    const saved =
-        JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
+    function openSettings() {
 
-    if (!saved.initials) {
-        openSettings();
-        return;
+        if (document.getElementById("vobSettings")) {
+            return;
+        }
+
+        const cfg = getConfig();
+
+        const box = document.createElement("div");
+
+        box.id = "vobSettings";
+
+        box.style.cssText =
+            "position:fixed;" +
+            "top:50%;" +
+            "left:50%;" +
+            "transform:translate(-50%,-50%);" +
+            "z-index:999999;" +
+            "background:white;" +
+            "border:1px solid #999;" +
+            "padding:15px;" +
+            "width:360px;" +
+            "border-radius:8px;" +
+            "box-shadow:0 0 10px rgba(0,0,0,.3);" +
+            "font-family:Arial;";
+
+        box.innerHTML =
+            '<div style="display:flex;justify-content:space-between;margin-bottom:10px;">' +
+            '<b>VOB/PT Settings</b>' +
+            '<button type="button" id="vobClose">X</button>' +
+            '</div>' +
+
+            '<div style="margin-bottom:10px;">' +
+            'Initials<br>' +
+            '<input id="vobInitials" style="width:100%;" value="' + (cfg.initials || "") + '">' +
+            '</div>' +
+
+            '<div style="margin-bottom:10px;">' +
+            'Mode<br>' +
+            '<button type="button" id="btnVOB">VOB Mode</button> ' +
+            '<button type="button" id="btnPT">PT Mode</button>' +
+            '</div>' +
+
+            '<div id="ptArea">' +
+            'PT Comment<br>' +
+            '<select id="ptComment" style="width:100%;">' +
+            '<option>Reviewed. Eligible. IDR Initiation document attached.</option>' +
+            '<option>Reviewed, no action required.</option>' +
+            '</select>' +
+            '</div>' +
+
+            '<button type="button" id="saveConfig" style="margin-top:10px;width:100%;">Save</button>';
+
+        document.body.appendChild(box);
+
+        let currentMode = cfg.mode || "VOB";
+
+        const ptArea =
+            document.getElementById("ptArea");
+
+        const ptSelect =
+            document.getElementById("ptComment");
+
+        if (cfg.ptComment) {
+            ptSelect.value = cfg.ptComment;
+        }
+
+        function redraw() {
+            ptArea.style.display =
+                currentMode === "PT"
+                    ? "block"
+                    : "none";
+        }
+
+        redraw();
+
+        document.getElementById("btnVOB")
+            .onclick = function (e) {
+
+                e.preventDefault();
+
+                currentMode = "VOB";
+
+                redraw();
+            };
+
+        document.getElementById("btnPT")
+            .onclick = function (e) {
+
+                e.preventDefault();
+
+                currentMode = "PT";
+
+                redraw();
+            };
+
+        document.getElementById("vobClose")
+            .onclick = function (e) {
+
+                e.preventDefault();
+
+                box.remove();
+            };
+
+        document.getElementById("saveConfig")
+            .onclick = function (e) {
+
+                e.preventDefault();
+
+                const initials =
+                    document
+                        .getElementById("vobInitials")
+                        .value
+                        .trim()
+                        .toUpperCase();
+
+                if (!initials) {
+                    alert("Initials required");
+                    return;
+                }
+
+                saveConfig({
+                    initials: initials,
+                    mode: currentMode,
+                    ptComment: ptSelect.value
+                });
+
+                box.remove();
+
+                insertComment();
+            };
     }
 
-    insertComment();
+    function createToolbar() {
+
+        if (document.getElementById("vobToolbar")) {
+            return;
+        }
+
+        const bar =
+            document.createElement("div");
+
+        bar.id = "vobToolbar";
+
+        bar.style.cssText =
+            "position:fixed;" +
+            "top:100px;" +
+            "right:20px;" +
+            "z-index:999998;" +
+            "background:white;" +
+            "border:1px solid #999;" +
+            "padding:8px;" +
+            "border-radius:8px;" +
+            "box-shadow:0 0 8px rgba(0,0,0,.2);";
+
+        bar.innerHTML =
+            '<button type="button" id="vobInsert">Insert</button> ' +
+            '<button type="button" id="vobEdit">Settings</button>';
+
+        document.body.appendChild(bar);
+
+        document.getElementById("vobInsert")
+            .onclick = function (e) {
+
+                e.preventDefault();
+
+                insertComment();
+            };
+
+        document.getElementById("vobEdit")
+            .onclick = function (e) {
+
+                e.preventDefault();
+
+                openSettings();
+            };
+    }
+
+    createToolbar();
+
+    const cfg = getConfig();
+
+    if (!cfg.initials) {
+        openSettings();
+    }
 
 })();
