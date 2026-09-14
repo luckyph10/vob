@@ -1,42 +1,130 @@
 (function () {
 
-    const CONFIG_KEY = "vobConfig";
+    const CONFIG_KEY = "vobSettings";
 
-    let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
+    function openSettings() {
 
-    if (!config.initials) {
+        if (document.getElementById("vobPopup")) return;
 
-        const initials = prompt("Enter your initials:");
+        const popup = document.createElement("div");
 
-        if (!initials) {
-            alert("Initials required.");
-            return;
+        popup.id = "vobPopup";
+
+        popup.style.cssText = `
+            position:fixed;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            z-index:999999;
+            background:#fff;
+            border:1px solid #ccc;
+            border-radius:8px;
+            padding:15px;
+            width:350px;
+            box-shadow:0 2px 10px rgba(0,0,0,.3);
+            font-family:Arial,sans-serif;
+        `;
+
+        const saved =
+            JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
+
+        popup.innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                <b>VOB/PT Settings</b>
+                <button id="vobClose">✕</button>
+            </div>
+
+            <div style="margin-bottom:10px;">
+                <label>Initials</label>
+                <input id="vobInitials"
+                    value="${saved.initials || ""}"
+                    style="width:100%;padding:4px;">
+            </div>
+
+            <div style="margin-bottom:10px;">
+                <label>Mode</label>
+                <div>
+                    <button id="modeVOB">VOB</button>
+                    <button id="modePT">PT</button>
+                </div>
+            </div>
+
+            <div id="ptSection">
+                <select id="ptComment" style="width:100%;">
+                    <option>Reviewed. Eligible. IDR Initiation document attached.</option>
+                    <option>Reviewed, no action required.</option>
+                </select>
+            </div>
+
+            <button
+                id="vobSave"
+                style="width:100%;margin-top:10px;">
+                Save
+            </button>
+        `;
+
+        document.body.appendChild(popup);
+
+        let mode = saved.mode || "VOB";
+
+        const ptSection =
+            document.getElementById("ptSection");
+
+        function refreshMode() {
+
+            ptSection.style.display =
+                mode === "PT"
+                    ? "block"
+                    : "none";
         }
 
-        config = {
-            initials: initials.toUpperCase(),
-            mode: "VOB",
-            ptComment: "Reviewed. Eligible. IDR Initiation document attached."
-        };
+        refreshMode();
 
-        localStorage.setItem(
-            CONFIG_KEY,
-            JSON.stringify(config)
-        );
+        document.getElementById("modeVOB")
+            .onclick = () => {
+                mode = "VOB";
+                refreshMode();
+            };
+
+        document.getElementById("modePT")
+            .onclick = () => {
+                mode = "PT";
+                refreshMode();
+            };
+
+        document.getElementById("vobClose")
+            .onclick = () => popup.remove();
+
+        document.getElementById("vobSave")
+            .onclick = () => {
+
+                const initials =
+                    document.getElementById("vobInitials")
+                        .value
+                        .trim()
+                        .toUpperCase();
+
+                if (!initials) {
+                    alert("Initials required.");
+                    return;
+                }
+
+                localStorage.setItem(
+                    CONFIG_KEY,
+                    JSON.stringify({
+                        initials: initials,
+                        mode: mode,
+                        ptComment: document.getElementById("ptComment").value
+                    })
+                );
+
+                popup.remove();
+
+                insertComment();
+            };
     }
 
-    const textarea = document.querySelector(
-        "#ngForm > fieldset > div:nth-child(1) > div:nth-child(1) > div:nth-child(6) > textarea"
-    );
-
-    if (!textarea) {
-        alert("Comment box not found");
-        return;
-    }
-
-    let comment = "";
-
-    function localDate() {
+    function getPCDate() {
 
         const d = new Date();
 
@@ -47,12 +135,14 @@
         return `${mm}/${dd}/${yy}`;
     }
 
-    function phDate() {
+    function getPHDate() {
 
         const d = new Date(
             new Date().toLocaleString(
                 "en-US",
-                { timeZone: "Asia/Manila" }
+                {
+                    timeZone: "Asia/Manila"
+                }
             )
         );
 
@@ -63,39 +153,71 @@
         return `${mm}/${dd}/${yy}`;
     }
 
-    if (config.mode === "VOB") {
+    function insertComment() {
 
-        comment =
-            `${localDate()} VOB verified, no change to NSA jurisdiction - ${config.initials}`;
+        const cfg =
+            JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
 
-    } else {
+        if (!cfg.initials) {
+            openSettings();
+            return;
+        }
 
-        comment =
-            `${config.ptComment} - ${phDate()} - ${config.initials}`;
+        const el = document.querySelector(
+            "#ngForm > fieldset > div:nth-child(1) > div:nth-child(1) > div:nth-child(6) > textarea"
+        );
+
+        if (!el) return;
+
+        let note = "";
+
+        if (cfg.mode === "VOB") {
+
+            note =
+                `${getPCDate()} VOB verified, no change to NSA jurisdiction - ${cfg.initials}`;
+
+        } else {
+
+            note =
+                `${cfg.ptComment} - ${getPHDate()} - ${cfg.initials}`;
+        }
+
+        if (
+            el.value
+                .toLowerCase()
+                .includes(note.toLowerCase())
+        ) {
+            console.log("Duplicate prevented");
+            return;
+        }
+
+        el.value =
+            note +
+            (el.value.trim()
+                ? "\n\n" + el.value
+                : "");
+
+        el.dispatchEvent(
+            new Event("input", {
+                bubbles: true
+            })
+        );
+
+        el.dispatchEvent(
+            new Event("change", {
+                bubbles: true
+            })
+        );
     }
 
-    if (
-        textarea.value
-            .toLowerCase()
-            .includes(comment.toLowerCase())
-    ) {
+    const saved =
+        JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
 
-        console.log("Duplicate found.");
+    if (!saved.initials) {
+        openSettings();
         return;
     }
 
-    textarea.value =
-        comment +
-        (textarea.value.trim()
-            ? "\n\n" + textarea.value
-            : "");
-
-    textarea.dispatchEvent(
-        new Event("input", { bubbles: true })
-    );
-
-    textarea.dispatchEvent(
-        new Event("change", { bubbles: true })
-    );
+    insertComment();
 
 })();
