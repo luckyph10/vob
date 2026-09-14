@@ -1,263 +1,154 @@
 (function () {
 
-    const STORAGE_KEY = "VOB_AUTO_SETTINGS";
+    const KEY = "VOB_SETTINGS";
 
-    function getConfig() {
-        return JSON.parse(
-            localStorage.getItem(STORAGE_KEY) || "{}"
-        );
+    function getSettings() {
+        return JSON.parse(localStorage.getItem(KEY) || "{}");
     }
 
-    function saveConfig(data) {
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(data)
-        );
-    }
-
-    function getTextArea() {
-        return document.querySelector(
-            'textarea[name="comments"]'
-        );
+    function saveSettings(data) {
+        localStorage.setItem(KEY, JSON.stringify(data));
     }
 
     function getPCDate() {
-
         const d = new Date();
-
-        const mm = String(
-            d.getMonth() + 1
-        ).padStart(2, "0");
-
-        const dd = String(
-            d.getDate()
-        ).padStart(2, "0");
-
-        const yy = String(
-            d.getFullYear()
-        ).slice(-2);
-
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const yy = String(d.getFullYear()).slice(-2);
         return `${mm}/${dd}/${yy}`;
     }
 
     function getPHDate() {
-
         const d = new Date(
-            new Date().toLocaleString(
-                "en-US",
-                {
-                    timeZone: "Asia/Manila"
-                }
-            )
+            new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Manila"
+            })
         );
 
-        const mm = String(
-            d.getMonth() + 1
-        ).padStart(2, "0");
-
-        const dd = String(
-            d.getDate()
-        ).padStart(2, "0");
-
-        const yy = String(
-            d.getFullYear()
-        ).slice(-2);
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const yy = String(d.getFullYear()).slice(-2);
 
         return `${mm}/${dd}/${yy}`;
     }
 
-    function buildComment() {
+    function insertComment() {
 
-        const cfg = getConfig();
+        const cfg = getSettings();
 
-        if (
-            cfg.mode === "PT"
-        ) {
+        if (!cfg.initials) {
+            openPopup();
+            return;
+        }
 
-            return (
+        const el = document.querySelector(
+            'textarea[name="comments"]'
+        );
+
+        if (!el) {
+            alert("Comments box not found.");
+            return;
+        }
+
+        let comment = "";
+
+        if (cfg.mode === "PT") {
+
+            comment =
                 cfg.ptComment +
                 " - " +
                 getPHDate() +
                 " - " +
-                cfg.initials
-            );
+                cfg.initials;
+
+        } else {
+
+            comment =
+                getPCDate() +
+                " VOB verified, no change to NSA jurisdiction - " +
+                cfg.initials;
         }
 
-        return (
-            getPCDate() +
-            " VOB verified, no change to NSA jurisdiction - " +
-            cfg.initials
-        );
-    }
-
-    function insertComment() {
-
-        const box = getTextArea();
-
-        if (!box) {
-            alert(
-                "Comments textarea not found."
-            );
-            return;
-        }
-
-        const comment =
-            buildComment();
-
-        if (
-            box.value
-                .toLowerCase()
-                .includes(
-                    comment.toLowerCase()
-                )
-        ) {
-
-            console.log(
-                "Duplicate prevented"
-            );
-
-            return;
-        }
-
-        box.value =
+        el.value =
             comment +
-            (
-                box.value.trim()
-                    ? "\n\n" +
-                      box.value
-                    : ""
-            );
+            (el.value.trim()
+                ? "\n\n" + el.value
+                : "");
 
-        box.dispatchEvent(
-            new Event(
-                "input",
-                {
-                    bubbles: true
-                }
-            )
+        el.dispatchEvent(
+            new Event("input", {
+                bubbles: true
+            })
         );
 
-        box.dispatchEvent(
-            new Event(
-                "change",
-                {
-                    bubbles: true
-                }
-            )
+        el.dispatchEvent(
+            new Event("change", {
+                bubbles: true
+            })
         );
-    }
-
-    function closePopup() {
-
-        const popup =
-            document.getElementById(
-                "vobPopup"
-            );
-
-        if (popup) {
-            popup.remove();
-        }
     }
 
     function openPopup() {
 
-        closePopup();
+        const existing =
+            document.getElementById("vobPopup");
 
-        const cfg =
-            getConfig();
+        if (existing) {
+            existing.remove();
+        }
 
-        const popup =
-            document.createElement(
-                "div"
-            );
+        const cfg = getSettings();
 
-        popup.id =
-            "vobPopup";
+        const div = document.createElement("div");
 
-        popup.style.cssText = `
-            position:fixed;
-            top:50%;
-            left:50%;
-            transform:translate(-50%,-50%);
-            width:380px;
-            background:white;
-            border:1px solid #ccc;
-            border-radius:10px;
-            padding:15px;
-            z-index:2147483647;
-            box-shadow:0 0 15px rgba(0,0,0,.3);
-            font-family:Arial;
-        `;
+        div.id = "vobPopup";
 
-        popup.innerHTML = `
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                margin-bottom:10px;
-                font-weight:bold;
-            ">
-                <span>VOB/PT Settings</span>
-                <button
-                    type="button"
-                    id="closeVobPopup"
-                >✖</button>
+        div.style.cssText =
+            "position:fixed;" +
+            "top:50%;" +
+            "left:50%;" +
+            "transform:translate(-50%,-50%);" +
+            "background:#fff;" +
+            "border:1px solid #ccc;" +
+            "padding:15px;" +
+            "width:350px;" +
+            "border-radius:8px;" +
+            "z-index:2147483647;" +
+            "box-shadow:0 0 15px rgba(0,0,0,.3);" +
+            "font-family:Arial;";
+
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                <b>Settings</b>
+                <button type="button" id="closePopup">X</button>
             </div>
 
             <div>
                 Initials
                 <input
-                    id="vobInitials"
+                    id="initials"
                     value="${cfg.initials || ""}"
-                    style="
-                        width:100%;
-                        margin-top:4px;
-                        margin-bottom:10px;
-                    ">
+                    style="width:100%;margin-top:5px;">
             </div>
 
-            <div>
+            <div style="margin-top:10px;">
+                <button type="button" id="vobBtn">
+                    VOB Mode
+                </button>
 
-                Mode
-
-                <div style="
-                    display:flex;
-                    gap:5px;
-                    margin-top:5px;
-                    margin-bottom:10px;
-                ">
-
-                    <button
-                        type="button"
-                        id="vobModeBtn"
-                    >
-                        VOB
-                    </button>
-
-                    <button
-                        type="button"
-                        id="ptModeBtn"
-                    >
-                        PT
-                    </button>
-
-                </div>
-
+                <button type="button" id="ptBtn">
+                    PT Mode
+                </button>
             </div>
 
-            <div
-                id="ptOptions"
-            >
+            <div id="ptSection" style="margin-top:10px;">
 
                 PT Comment
 
                 <select
                     id="ptComment"
-                    style="
-                        width:100%;
-                        margin-top:4px;
-                    "
+                    style="width:100%;margin-top:5px;"
                 >
-
                     <option>
                         Reviewed. Eligible. IDR Initiation document attached.
                     </option>
@@ -265,38 +156,159 @@
                     <option>
                         Reviewed, no action required.
                     </option>
-
                 </select>
 
             </div>
 
             <button
                 type="button"
-                id="saveVobSettings"
-                style="
-                    width:100%;
-                    margin-top:15px;
-                "
+                id="saveBtn"
+                style="width:100%;margin-top:15px;"
             >
                 Save
             </button>
         `;
 
-        document.body.appendChild(
-            popup
-        );
+        document.body.appendChild(div);
 
-        let currentMode =
-            cfg.mode ||
-            "VOB";
+        let mode = cfg.mode || "VOB";
 
-        const ptOptions =
+        const ptSection =
             document.getElementById(
-                "ptOptions"
+                "ptSection"
             );
 
-        function refreshMode() {
+        if (cfg.ptComment) {
+            document.getElementById(
+                "ptComment"
+            ).value = cfg.ptComment;
+        }
 
-            ptOptions.style.display =
-                currentMode ===
-         
+        function refresh() {
+
+            ptSection.style.display =
+                mode === "PT"
+                    ? "block"
+                    : "none";
+        }
+
+        refresh();
+
+        document.getElementById("vobBtn")
+            .onclick = function () {
+
+                mode = "VOB";
+
+                refresh();
+            };
+
+        document.getElementById("ptBtn")
+            .onclick = function () {
+
+                mode = "PT";
+
+                refresh();
+            };
+
+        document.getElementById("closePopup")
+            .onclick = function () {
+
+                div.remove();
+            };
+
+        document.getElementById("saveBtn")
+            .onclick = function () {
+
+                const initials =
+                    document
+                        .getElementById(
+                            "initials"
+                        )
+                        .value
+                        .trim()
+                        .toUpperCase();
+
+                if (!initials) {
+
+                    alert(
+                        "Initials required."
+                    );
+
+                    return;
+                }
+
+                saveSettings({
+                    initials,
+                    mode,
+                    ptComment:
+                        document
+                            .getElementById(
+                                "ptComment"
+                            )
+                            .value
+                });
+
+                div.remove();
+
+                insertComment();
+            };
+    }
+
+    function createButton() {
+
+        if (
+            document.getElementById(
+                "vobSettingsButton"
+            )
+        ) return;
+
+        const btn =
+            document.createElement(
+                "button"
+            );
+
+        btn.id =
+            "vobSettingsButton";
+
+        btn.type =
+            "button";
+
+        btn.innerHTML =
+            "⚙";
+
+        btn.style.cssText =
+            "position:fixed;" +
+            "top:100px;" +
+            "right:15px;" +
+            "width:40px;" +
+            "height:40px;" +
+            "border:none;" +
+            "border-radius:50%;" +
+            "background:#0078d4;" +
+            "color:white;" +
+            "font-size:20px;" +
+            "cursor:pointer;" +
+            "z-index:2147483646;";
+
+        btn.onclick =
+            function () {
+
+                openPopup();
+            };
+
+        document.body.appendChild(
+            btn
+        );
+    }
+
+    createButton();
+
+    const cfg = getSettings();
+
+    if (!cfg.initials) {
+        openPopup();
+    } else {
+        insertComment();
+    }
+
+})();
