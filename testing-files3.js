@@ -1,3 +1,4 @@
+
 (async()=>{
 
 /* =========================================================
@@ -1985,255 +1986,6 @@ const openArbitIframe=()=>{
         overlay
     );
 
-  /* =====================================================
-   POSITION POPUP UNDER SERVICE LINE SELECTOR
-   ===================================================== */
-
-const positionPopupUnderServiceLine=()=>{
-
-    const popupElement=
-        document.getElementById(
-            "dispute-popup"
-        );
-
-    if(!popupElement)
-        return;
-
-
-    /*
-     * Find the "Service Line" label.
-     */
-    const serviceLineLabel=[
-        ...document.querySelectorAll(
-            "span.input-group-text"
-        )
-    ].find(el=>
-        (
-            el.textContent||""
-        )
-        .replace(/\u00A0/g," ")
-        .replace(/\s+/g," ")
-        .trim()
-        .toLowerCase()
-        ===
-        "service line"
-    );
-
-
-    if(!serviceLineLabel){
-
-        console.warn(
-            "Service Line label not found."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Find the ng-select associated with the
-     * Service Line field.
-     */
-    let serviceLineSelector=
-        serviceLineLabel
-            .parentElement
-            ?.querySelector(
-                "ng-select"
-            );
-
-
-    /*
-     * If the ng-select is not in the same parent,
-     * walk upward until the associated selector
-     * is found.
-     */
-    if(!serviceLineSelector){
-
-        let parent=
-            serviceLineLabel.parentElement;
-
-        for(
-            let i=0;
-            i<5 && parent;
-            i++
-        ){
-
-            serviceLineSelector=
-                parent.querySelector(
-                    "ng-select"
-                );
-
-            if(serviceLineSelector)
-                break;
-
-            parent=
-                parent.parentElement;
-
-        }
-
-    }
-
-
-    /*
-     * Fallback: locate the ng-select containing
-     * the supplied .ng-input / combobox.
-     */
-    if(!serviceLineSelector){
-
-        const serviceInput=
-            [...document.querySelectorAll(
-                ".ng-input input[role='combobox']"
-            )].find(input=>{
-
-                const ngSelect=
-                    input.closest(
-                        "ng-select"
-                    );
-
-                if(!ngSelect)
-                    return false;
-
-                const parentText=
-                    ngSelect.parentElement
-                        ?.parentElement
-                        ?.textContent||"";
-
-                return /service\s*line/i.test(
-                    parentText
-                );
-
-            });
-
-
-        serviceLineSelector=
-            serviceInput
-                ?.closest(
-                    "ng-select"
-                );
-
-    }
-
-
-    if(!serviceLineSelector){
-
-        console.warn(
-            "Service Line ng-select not found."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Use the actual rendered selector position.
-     */
-    const rect=
-        serviceLineSelector.getBoundingClientRect();
-
-
-    const popupWidth=
-        popupElement.offsetWidth||390;
-
-
-    const viewportWidth=
-        window.innerWidth;
-
-
-    /*
-     * Keep the popup aligned with the selector,
-     * while preventing it from going off-screen.
-     */
-    let left=
-        rect.left;
-
-
-    if(
-        left+popupWidth>
-        viewportWidth-12
-    ){
-
-        left=
-            viewportWidth-
-            popupWidth-
-            12;
-
-    }
-
-
-    if(left<12)
-        left=12;
-
-
-    /*
-     * Place popup directly underneath
-     * the Service Line selector.
-     */
-    const top=
-        rect.bottom+6;
-
-
-    popupElement.style.setProperty(
-        "left",
-        `${Math.round(left)}px`,
-        "important"
-    );
-
-
-    popupElement.style.setProperty(
-        "top",
-        `${Math.round(top)}px`,
-        "important"
-    );
-
-
-    popupElement.style.setProperty(
-        "right",
-        "auto",
-        "important"
-    );
-
-
-    popupElement.style.setProperty(
-        "bottom",
-        "auto",
-        "important"
-    );
-
-};
-
-
-/*
- * Position after the popup has been rendered.
- */
-requestAnimationFrame(
-    positionPopupUnderServiceLine
-);
-
-
-/*
- * Keep the popup underneath the selector if
- * the page is resized or scrolled.
- */
-window.addEventListener(
-    "resize",
-    positionPopupUnderServiceLine,
-    {
-        passive:true
-    }
-);
-
-
-window.addEventListener(
-    "scroll",
-    positionPopupUnderServiceLine,
-    {
-        passive:true,
-        capture:true
-    }
-);
-
 
     const iframe=
         document.getElementById(
@@ -2451,8 +2203,7 @@ window.addEventListener(
 
         overlay.style.setProperty(
             "isolation",
-            "isolate",
-            "important"
+            "isolate"
         );
 
     }catch(e){
@@ -2948,7 +2699,7 @@ style.id=
 style.textContent=`
 
     /* =====================================================
-       DISPUTE POPUP — LOWER RIGHT APPLICATION PANEL
+       DISPUTE POPUP — POSITIONED UNDER SERVICE LINE
        ===================================================== */
 
     #dispute-popup-overlay{
@@ -2963,42 +2714,43 @@ style.textContent=`
 
 
     #dispute-popup{
-    pointer-events:auto!important;
-    position:fixed!important;
+        pointer-events:auto!important;
+        position:fixed!important;
 
-    /*
-     * Position is calculated dynamically underneath
-     * the Service Line selector.
-     */
-    right:auto!important;
-    bottom:auto!important;
-    left:0!important;
-    top:0!important;
+        /*
+         * Position is dynamically calculated from
+         * the Service Line selector.
+         */
+        left:0!important;
+        top:0!important;
+        right:auto!important;
+        bottom:auto!important;
 
-    width:390px!important;
-    max-width:calc(100vw - 24px)!important;
+        width:390px!important;
+        max-width:calc(100vw - 24px)!important;
 
-    max-height:calc(100vh - 78px)!important;
-    overflow-y:auto!important;
-    overflow-x:hidden!important;
+        max-height:calc(100vh - 78px)!important;
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
 
-    padding:14px!important;
+        padding:14px!important;
 
-    border-radius:4px!important;
+        border-radius:4px!important;
 
-    background:#202a36!important;
-    border:1px solid #465363!important;
+        background:#202a36!important;
+        border:1px solid #465363!important;
 
-    box-shadow:
-        0 4px 14px rgba(0,0,0,.45)!important;
+        box-shadow:
+            0 4px 14px rgba(0,0,0,.45)!important;
 
-    backdrop-filter:none!important;
-    -webkit-backdrop-filter:none!important;
+        backdrop-filter:none!important;
+        -webkit-backdrop-filter:none!important;
 
-    font-family:Arial,sans-serif!important;
-    color:#fff!important;
-    box-sizing:border-box!important;
-}
+        font-family:Arial,sans-serif!important;
+        color:#fff!important;
+        box-sizing:border-box!important;
+    }
+
 
     /* =====================================================
        HEADER
@@ -3503,9 +3255,6 @@ style.textContent=`
 
         #dispute-popup{
 
-            right:8px!important;
-            bottom:8px!important;
-
             width:
                 calc(100vw - 16px)!important;
 
@@ -3545,6 +3294,390 @@ document.head.appendChild(
 
 document.body.appendChild(
     overlay
+);
+
+
+/* =========================================================
+   POSITION POPUP UNDER SERVICE LINE SELECTOR
+   ========================================================= */
+
+const positionPopupUnderServiceLine=()=>{
+
+    const popupElement=
+        document.getElementById(
+            "dispute-popup"
+        );
+
+
+    if(!popupElement)
+        return;
+
+
+    /*
+     * Find the Service Line label.
+     *
+     * Example:
+     * <span class="input-group-text col-5">
+     *     Service Line
+     * </span>
+     */
+    const serviceLineLabel=[
+        ...document.querySelectorAll(
+            "span.input-group-text"
+        )
+    ].find(el=>{
+
+        return(
+            (
+                el.textContent||""
+            )
+            .replace(/\u00A0/g," ")
+            .replace(/\r?\n/g," ")
+            .replace(/\s+/g," ")
+            .trim()
+            .toLowerCase()
+            ===
+            "service line"
+        );
+
+    });
+
+
+    if(!serviceLineLabel){
+
+        console.warn(
+            "Service Line label not found. Popup will remain at default position."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Find the ng-select belonging to the Service Line field.
+     */
+    let serviceLineSelector=
+        serviceLineLabel
+            .parentElement
+            ?.querySelector(
+                "ng-select"
+            );
+
+
+    /*
+     * If the selector is not in the immediate parent,
+     * search a few parent levels.
+     */
+    if(!serviceLineSelector){
+
+        let parent=
+            serviceLineLabel.parentElement;
+
+
+        for(
+            let i=0;
+            i<6 && parent;
+            i++
+        ){
+
+            serviceLineSelector=
+                parent.querySelector(
+                    "ng-select"
+                );
+
+
+            if(serviceLineSelector)
+                break;
+
+
+            parent=
+                parent.parentElement;
+
+        }
+
+    }
+
+
+    /*
+     * Fallback using the actual .ng-input / combobox
+     * supplied in the HTML.
+     */
+    if(!serviceLineSelector){
+
+        const serviceInputs=[
+            ...document.querySelectorAll(
+                ".ng-input input[role='combobox']"
+            )
+        ];
+
+
+        for(
+            const input of serviceInputs
+        ){
+
+            const ngSelect=
+                input.closest(
+                    "ng-select"
+                );
+
+
+            if(!ngSelect)
+                continue;
+
+
+            /*
+             * Check nearby text for "Service Line".
+             */
+            const nearbyText=
+                (
+                    ngSelect.parentElement
+                        ?.parentElement
+                        ?.textContent||
+                    ngSelect.parentElement
+                        ?.textContent||
+                    ""
+                )
+                .replace(/\u00A0/g," ")
+                .replace(/\r?\n/g," ")
+                .replace(/\s+/g," ")
+                .trim();
+
+
+            if(
+                /service\s*line/i.test(
+                    nearbyText
+                )
+            ){
+
+                serviceLineSelector=
+                    ngSelect;
+
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    /*
+     * Last fallback:
+     * use the closest element containing the
+     * Service Line label and locate its ng-select.
+     */
+    if(!serviceLineSelector){
+
+        let container=
+            serviceLineLabel.parentElement;
+
+
+        while(
+            container &&
+            container!==document.body &&
+            !serviceLineSelector
+        ){
+
+            serviceLineSelector=
+                container.querySelector(
+                    "ng-select"
+                );
+
+
+            if(serviceLineSelector)
+                break;
+
+
+            container=
+                container.parentElement;
+
+        }
+
+    }
+
+
+    if(!serviceLineSelector){
+
+        console.warn(
+            "Service Line ng-select not found."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Get the selector's exact screen position.
+     */
+    const rect=
+        serviceLineSelector.getBoundingClientRect();
+
+
+    /*
+     * Force the popup to have its normal width
+     * before calculating horizontal placement.
+     */
+    const popupWidth=
+        popupElement.offsetWidth||
+        390;
+
+
+    const popupHeight=
+        popupElement.offsetHeight||
+        0;
+
+
+    const viewportWidth=
+        window.innerWidth;
+
+
+    const viewportHeight=
+        window.innerHeight;
+
+
+    /*
+     * Start aligned with the left edge of
+     * the Service Line selector.
+     */
+    let left=
+        rect.left;
+
+
+    /*
+     * Prevent the popup from going outside
+     * the right side of the screen.
+     */
+    if(
+        left+popupWidth>
+        viewportWidth-12
+    ){
+
+        left=
+            viewportWidth-
+            popupWidth-
+            12;
+
+    }
+
+
+    /*
+     * Prevent the popup from going outside
+     * the left side of the screen.
+     */
+    if(left<12)
+        left=12;
+
+
+    /*
+     * Normally place it 6px underneath
+     * the Service Line selector.
+     */
+    let top=
+        rect.bottom+6;
+
+
+    /*
+     * If there isn't enough room below the selector,
+     * place it above the selector instead.
+     *
+     * This does not change the UI — it only prevents
+     * the popup from being inaccessible off-screen.
+     */
+    if(
+        popupHeight>0 &&
+        top+popupHeight>
+        viewportHeight-8
+    ){
+
+        const above=
+            rect.top-
+            popupHeight-
+            6;
+
+
+        if(above>=8){
+
+            top=above;
+
+        }else{
+
+            top=
+                Math.max(
+                    8,
+                    viewportHeight-
+                    popupHeight-
+                    8
+                );
+
+        }
+
+    }
+
+
+    popupElement.style.setProperty(
+        "left",
+        `${Math.round(left)}px`,
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "top",
+        `${Math.round(top)}px`,
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "right",
+        "auto",
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "bottom",
+        "auto",
+        "important"
+    );
+
+};
+
+
+/*
+ * Wait until the popup has been rendered.
+ */
+requestAnimationFrame(()=>{
+
+    positionPopupUnderServiceLine();
+
+});
+
+
+/*
+ * Recalculate when the browser window changes size.
+ */
+window.addEventListener(
+    "resize",
+    positionPopupUnderServiceLine,
+    {
+        passive:true
+    }
+);
+
+
+/*
+ * Recalculate when the page scrolls.
+ */
+window.addEventListener(
+    "scroll",
+    positionPopupUnderServiceLine,
+    {
+        passive:true,
+        capture:true
+    }
 );
 
 
