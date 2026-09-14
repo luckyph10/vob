@@ -1,658 +1,4775 @@
-(() => {
+(async()=>{
 
-if (window.POGI_MODE_ACTIVE) return;
-window.POGI_MODE_ACTIVE = true;
+/* =========================================================
+   DISPUTE USER NAME + PROCESSOR NAME
+   ========================================================= */
 
-// ======================================
-// CREATE HERO IMAGE
-// ======================================
+const KEY="disputeUserName";
+const PROCESSOR_KEY="processorName";
 
-const hero = document.createElement("img");
+const getName=()=>{
+    try{
+        return(localStorage.getItem(KEY)||"").trim();
+    }catch(e){
+        return"";
+    }
+};
 
-hero.style.position = "fixed";
-hero.style.left = "100px";
-hero.style.top = "100px";
-hero.style.width = "220px";
-hero.style.height = "auto";
-hero.style.zIndex = "999999999";
-hero.style.pointerEvents = "auto";
-hero.style.userSelect = "none";
-hero.style.cursor = "pointer";
+const saveName=n=>{
+    try{
+        localStorage.setItem(KEY,n);
+        return true;
+    }catch(e){
+        console.error(e);
+        return false;
+    }
+};
 
-document.body.appendChild(hero);
+const getProcessorName=()=>{
+    try{
+        return(localStorage.getItem(PROCESSOR_KEY)||"").trim();
+    }catch(e){
+        return"";
+    }
+};
 
-// ======================================
-// CREATE CAPE
-// ======================================
+const saveProcessorName=n=>{
+    try{
+        localStorage.setItem(PROCESSOR_KEY,n);
+        return true;
+    }catch(e){
+        console.error(e);
+        return false;
+    }
+};
 
-const cape = document.createElement("div");
+const getPHDate=()=>{
 
-cape.style.position = "fixed";
-cape.style.width = "90px";
-cape.style.height = "140px";
-cape.style.background = "linear-gradient(#ff0000,#880000)";
-cape.style.clipPath =
-  "polygon(25% 0%,75% 0%,100% 100%,0% 100%)";
-
-cape.style.zIndex = "999999998";
-cape.style.pointerEvents = "none";
-
-document.body.appendChild(cape);
-
-// ======================================
-// REMOVE BACKGROUND
-// ======================================
-
-const sourceImage = new Image();
-sourceImage.crossOrigin = "anonymous";
-
-sourceImage.src =
-"https://luckyph10.github.io/feeling_pogi_yarn/image.png";
-
-let imageWidth = 220;
-let imageHeight = 400;
-
-sourceImage.onload = () => {
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = sourceImage.width;
-    canvas.height = sourceImage.height;
-
-    ctx.drawImage(sourceImage, 0, 0);
-
-    const imageData =
-        ctx.getImageData(
-            0,
-            0,
-            canvas.width,
-            canvas.height
+    const phDate=
+        new Date(
+            new Date().toLocaleString(
+                "en-US",
+                {
+                    timeZone:"Asia/Manila"
+                }
+            )
         );
 
-    const data = imageData.data;
+    return `${
+        phDate.getMonth()+1
+    }/${
+        phDate.getDate()
+    }/${
+        phDate.getFullYear()
+    }`;
 
-    for (let i = 0; i < data.length; i += 4) {
-
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        // Remove white & checkerboard
-
-        if (
-            r > 180 &&
-            g > 180 &&
-            b > 180
-        ) {
-            data[i + 3] = 0;
-        }
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-
-    hero.src = canvas.toDataURL("image/png");
-
-    imageHeight =
-        (sourceImage.height /
-        sourceImage.width)
-        * imageWidth;
 };
 
-// ======================================
-// MOVEMENT
-// ======================================
 
-let x = 100;
-let y = 100;
+/* =========================================================
+   NORMALIZE
+   ========================================================= */
 
-let dx = 15;
-let dy = 12;
+const normalizeValue=value=>{
 
-let speed = 1;
-
-// ======================================
-// BOOST TEXT
-// ======================================
-
-function showText(msg, px, py) {
-
-    const div = document.createElement("div");
-
-    div.textContent = msg;
-
-    div.style.position = "fixed";
-    div.style.left = px + "px";
-    div.style.top = py + "px";
-    div.style.color = "red";
-    div.style.fontWeight = "bold";
-    div.style.fontSize = "28px";
-    div.style.zIndex = "999999999";
-
-    document.body.appendChild(div);
-
-    let opacity = 1;
-
-    const id = setInterval(() => {
-
-        py -= 2;
-        opacity -= 0.03;
-
-        div.style.top = py + "px";
-        div.style.opacity = opacity;
-
-        if (opacity <= 0) {
-
-            clearInterval(id);
-            div.remove();
-        }
-
-    }, 16);
-}
-
-// ======================================
-// SPEED TRAIL
-// ======================================
-
-function createTrail() {
-
-    const t = document.createElement("div");
-
-    t.innerHTML = "💨";
-
-    t.style.position = "fixed";
-    t.style.left = (x + 50) + "px";
-    t.style.top = (y + 100) + "px";
-    t.style.fontSize = "28px";
-    t.style.pointerEvents = "none";
-    t.style.zIndex = "999999990";
-
-    document.body.appendChild(t);
-
-    setTimeout(() => t.remove(), 500);
-}
-
-// ======================================
-// MOUSE BOOST
-// ======================================
-
-hero.addEventListener("mouseenter", () => {
-
-    speed += 1;
-
-    if (speed > 6)
-        speed = 6;
-
-    showText("🚀 POGI BOOST!", x, y);
-
-});
-
-// ======================================
-// TURBO MODE
-// ======================================
-
-hero.addEventListener("dblclick", () => {
-
-    speed = 10;
-
-    showText("⚡ TURBO POGI ⚡", x, y);
-
-    setTimeout(() => {
-        speed = 2;
-    }, 3000);
-
-});
-
-// ======================================
-// MAIN ANIMATION
-// ======================================
-
-function animate() {
-
-    x += dx * speed;
-    y += dy * speed;
-
-    if (x <= 0) {
-        dx = Math.abs(dx);
-        showText("💥", x, y);
-    }
-
-    if (x + imageWidth >= innerWidth) {
-        dx = -Math.abs(dx);
-        showText("💥", x, y);
-    }
-
-    if (y <= 0) {
-        dy = Math.abs(dy);
-        showText("💥", x, y);
-    }
-
-    if (y + imageHeight >= innerHeight) {
-        dy = -Math.abs(dy);
-        showText("💥", x, y);
-    }
-
-    hero.style.left = x + "px";
-    hero.style.top = y + "px";
-
-    const angle =
-      Math.atan2(dy, dx) * 180 / Math.PI;
-
-    hero.style.transform =
-      `rotate(${angle * 0.08}deg)`;
-
-    cape.style.left =
-      (x + imageWidth / 2 - 45 - Math.sign(dx) * 25)
-      + "px";
-
-    cape.style.top =
-      (y + 20)
-      + "px";
-
-    cape.style.transform =
-      `rotate(${Math.sin(Date.now()/100)*15}deg)`;
-
-    if (Math.random() < 0.15)
-        createTrail();
-
-    requestAnimationFrame(animate);
-}
-
-animate();
-
-// ======================================
-// ESC TO REMOVE
-// ======================================
-
-window.addEventListener("keydown", e => {
-
-    if (e.key === "Escape") {
-
-        hero.remove();
-        cape.remove();
-
-        window.POGI_MODE_ACTIVE = false;
-    }
-
-});
-
-console.log("🦸 SUPER POGI MODE ACTIVATED");
-
-})();
-
-
-
-
-
-
-
-(function () {
-
-    var KEY = "commentPopupAuthorized";
-
-    if (localStorage.getItem(KEY) !== "yes") {
-
-        var pwd = document.createElement("input");
-
-        pwd.type = "password";
-        pwd.placeholder = "Enter password";
-
-        pwd.style.cssText =
-            "position:fixed;" +
-            "top:50%;" +
-            "left:50%;" +
-            "transform:translate(-50%,-50%);" +
-            "z-index:9999999;" +
-            "padding:10px;" +
-            "font-size:16px;" +
-            "border:2px solid #333;" +
-            "background:#fff;" +
-            "border-radius:6px;";
-
-        document.body.appendChild(pwd);
-
-        pwd.focus();
-
-        pwd.addEventListener("keydown", function (e) {
-
-            if (e.key === "Enter") {
-
-                if (pwd.value === "202608") {
-
-                    localStorage.setItem(KEY, "yes");
-
-                    document.body.removeChild(pwd);
-
-                    runScript();
-
-                } else {
-
-                    alert("Incorrect password");
-
-                    document.body.removeChild(pwd);
-                }
-            }
-        });
-
-        return;
-    }
-
-    runScript();
-
-    function runScript() {
-
-        const el =
-            document.querySelector('#ngForm > fieldset > div:nth-child(1) > div:nth-child(1) > div:nth-child(6) > textarea') ||
-            document.querySelector('#ngForm > fieldset > div:nth-child(1) > div:nth-child(1) > div:nth-child(7) > textarea');
-
-        if (!el) {
-            alert('Textarea not found');
-            return;
-        }
-
-        const comments = [
-            'VOB verified, no change to NSA jurisdiction',
-            'Completed: VOB is verified Brief Ready to submit.',
-            'Completed: VOB verified. Dispute status is closed. Payment determination is uploaded.',
-            'Ineligible to Submit: Case was withdrawn by HaloMD.',
-            'Ineligible to Submit: Case (Ineligibility reason)',
-            'Ineligible to Submit: Government Plan.',
-            'Ineligible to Submit: Patient is not over 65 years old, Insurance Type is Medicaid.',
-            'Ineligible to Submit: Patient is over 65 years old. Primary Payer: Medicare.',
-            'Ineligible to Submit: Ineligible Plan.',
-            'Ineligible to Submit: Provider is in-Network.',
-            'Ineligible to Submit: State Arbitration.',
-            'Ineligible to Submit: Self Pay Plan type.',
-            'Ineligible to Submit: Plan type did not match.',
-            'Ineligible to Submit: State-based marketplace-State.',
-            'Ineligible to Submit: Self-Funded Opt - In.',
-            'Ineligible to Submit:Unable to find withdrawn email.',
-            'Ineligible to Submit: Case (Unable to find evidence for INN)',
-            'Pending Onshore Review: Dispute Status Closed. Patient over 65 years old, VOB is not available. Final payment determination uploaded.',
-            'Pending Onshore Review: Incomplete ING evidence.',
-            'Pending Onshore Review: Unable to update the dispute tracker c/o Lillian Madison.',
-            'Pending Onshore Review: Plan type is Self funded, Policy Type is Medicaid.',
-            'Dispute is pending VOB: No VOB checkmark AND no case notes confirming plan type.',
-            'Dispute is pending VOB: The patient is over 65 years old. Unable to determine primary payer - VOB is not available.',
-            'Dispute is pending VOB: Technical Error.',
-            'Dispute is pending VOB: 100% of billed charges went to PR indicated in Ineligibility reason in Arbit.',
-            'Dispute is Pending: No Plan Type Indicated in Arbit.',
-            'Resubmission: CPT codes submitted for resubmission noted in case comments. Awaiting verification.',
-            'Resubmission: CPT codes deleted for resubmission.Resubmitted dispute number available.'
-        ];
-
-        const oldPopup = document.getElementById('aldCommentPopup');
-
-        if (oldPopup) {
-            oldPopup.remove();
-        }
-
-        const popup = document.createElement('div');
-
-        popup.id = 'aldCommentPopup';
-
-        popup.style.cssText =
-            'position:fixed;' +
-            'top:50%;' +
-            'left:50%;' +
-            'transform:translate(-50%,-50%);' +
-            'width:1100px;' +
-            'max-width:95vw;' +
-            'max-height:85vh;' +
-            'overflow:auto;' +
-            'background:#ffffff;' +
-            'border:4px solid #333;' +
-            'padding:15px;' +
-            'z-index:999999;' +
-            'font-family:Arial,sans-serif;' +
-            'border-radius:10px;' +
-            'box-shadow:0 0 25px rgba(0,0,0,.5);';
-
-        popup.innerHTML =
-            '<div style="font-size:26px;font-weight:900;color:#000;text-align:center;margin-bottom:15px;">VOB COMMENTS</div>';
-
-        const initialsWrap = document.createElement('div');
-
-initialsWrap.style.cssText =
-    'position:absolute;' +
-    'top:10px;' +
-    'left:10px;' +
-    'display:flex;' +
-    'align-items:center;' +
-    'gap:5px;';
-
-const initialsInput = document.createElement('input');
-
-initialsInput.type = 'text';
-initialsInput.placeholder = 'Initials';
-initialsInput.maxLength = 10;
-initialsInput.value =
-    localStorage.getItem('vobCommentInitials') || 'ALD';
-
-initialsInput.style.cssText =
-    'width:80px;' +
-    'padding:6px;' +
-    'border:1px solid #333;' +
-    'border-radius:4px;' +
-    'font-weight:bold;' +
-    'text-transform:uppercase;';
-
-const saveBtn = document.createElement('button');
-
-saveBtn.textContent = 'Save';
-
-saveBtn.style.cssText =
-    'padding:6px 10px;' +
-    'background:#1976d2;' +
-    'color:#fff;' +
-    'border:none;' +
-    'border-radius:4px;' +
-    'cursor:pointer;' +
-    'font-weight:bold;';
-
-saveBtn.onclick = function () {
-
-    const val = initialsInput.value
+    return String(value??"")
+        .replace(/\u00A0/g," ")
+        .replace(/\r?\n/g," ")
+        .replace(/\s+/g," ")
         .trim()
-        .toUpperCase();
+        .toLowerCase();
 
-    if (!val) {
-        alert('Enter initials first.');
-        return;
-    }
+};
 
-    localStorage.setItem(
-        'vobCommentInitials',
-        val
+
+/* =========================================================
+   GET DISPUTE NUMBER
+   ========================================================= */
+
+const disputeNumber=
+    document.querySelector(
+        "#ngForm fieldset > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > input"
+    )?.value?.trim()||"";
+
+
+/* =========================================================
+   GET DISPUTE STATUS
+   ========================================================= */
+
+const disputeStatusElement=
+    document.querySelector(
+        "#ngForm fieldset > div:nth-child(1) > div:nth-child(1) > div:nth-child(4) > ng-select"
     );
 
-    alert('Initials saved: ' + val);
+const disputeStatus=
+    disputeStatusElement
+        ?.querySelector(".ng-value-label")
+        ?.textContent
+        ?.trim()
+    ||
+    disputeStatusElement
+        ?.querySelector(".ng-value")
+        ?.textContent
+        ?.trim()
+    ||
+    disputeStatusElement
+        ?.textContent
+        ?.trim()
+    ||
+    "";
+
+
+/* =========================================================
+   GET COLUMN J SOURCE
+   ========================================================= */
+
+const columnJElement=
+    document.querySelector(
+        "#ngForm > fieldset > div > div:nth-child(1) > div:nth-child(2) > ng-select"
+    );
+
+const columnJValue=
+    columnJElement
+        ?.querySelector(".ng-value-label")
+        ?.textContent
+        ?.trim()
+    ||
+    columnJElement
+        ?.querySelector(".ng-value")
+        ?.textContent
+        ?.trim()
+    ||
+    columnJElement
+        ?.textContent
+        ?.trim()
+    ||
+    "";
+
+
+/* =========================================================
+   GET PAGE K VALUE
+   ========================================================= */
+
+const columnKPageElement=
+    document.querySelector(
+        "#ngForm > fieldset > div > div:nth-child(1) > div:nth-child(4) > ng-select"
+    );
+
+const columnKPageValue=
+    columnKPageElement
+        ?.querySelector(".ng-value-label")
+        ?.textContent
+        ?.trim()
+    ||
+    columnKPageElement
+        ?.querySelector(".ng-value")
+        ?.textContent
+        ?.trim()
+    ||
+    columnKPageElement
+        ?.textContent
+        ?.trim()
+    ||
+    "";
+
+
+/* =========================================================
+   GET IDS
+   ========================================================= */
+
+const arbitIdLinks=[
+    ...document.querySelectorAll(
+        'a[title="Open Arbit"][href*="calculator/"]'
+    )
+];
+
+
+/* =========================================================
+   GET IDS
+   ========================================================= */
+
+const ids=[
+    ...arbitIdLinks
+]
+.map(link=>{
+
+    const td=
+        link.closest("td");
+
+    const value=
+        (
+            link.textContent||
+            td?.textContent||
+            ""
+        )
+        .replace(/\u00A0/g," ")
+        .replace(/\r?\n/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+
+    return value;
+
+})
+.filter(Boolean);
+
+
+/* =========================================================
+   GET ALL ARBIT / APP ID LINKS
+   ========================================================= */
+
+const arbitLinks=[
+    ...document.querySelectorAll(
+        'a[title="Open Arbit"][href*="calculator/"]'
+    )
+]
+.map((link,index)=>{
+
+    const td=
+        link.closest("td");
+
+    const id=
+        (
+            link.textContent||
+            td?.textContent||
+            ""
+        )
+        .replace(/\u00A0/g," ")
+        .replace(/\r?\n/g," ")
+        .replace(/\s+/g," ")
+        .trim()
+        ||
+        ids[index]
+        ||
+        "";
+
+    return{
+        id:id,
+        href:link.href,
+        index:index
+    };
+
+})
+.filter(item=>item.id && item.href);
+
+
+/* =========================================================
+   REMOVE DUPLICATE APP / ARBIT LINKS
+   ========================================================= */
+
+const uniqueArbitLinks=[];
+const seenArbitLinks=new Set();
+
+for(const item of arbitLinks){
+
+    const key=
+        `${item.id}|||${item.href}`;
+
+    if(seenArbitLinks.has(key))
+        continue;
+
+    seenArbitLinks.add(key);
+
+    uniqueArbitLinks.push(item);
+
+}
+
+
+/* =========================================================
+   GET PLAN TYPES
+   ========================================================= */
+
+const planTypes=[
+    ...document.querySelectorAll(
+        '[id^="planType_"]'
+    )
+]
+.map(el=>
+    (
+        el.innerText||
+        el.textContent||
+        el.value||
+        ""
+    )
+    .replace(/\u00A0/g," ")
+    .replace(/\r?\n/g," ")
+    .replace(/\s+/g," ")
+    .trim()
+)
+.filter(Boolean);
+
+
+/* =========================================================
+   GET FIRST ARBIT ID NUMBER
+   ========================================================= */
+
+const arbitIdNumber =
+    document.querySelector(
+        'a[title="Open Arbit"][href*="calculator/"]'
+    )?.textContent
+        ?.replace(/\u00A0/g," ")
+        .replace(/\r?\n/g," ")
+        .replace(/\s+/g," ")
+        .trim() || "";
+
+
+/* =========================================================
+   VALIDATION
+   ========================================================= */
+
+if(
+    !disputeNumber||
+    !disputeStatus||
+    !ids.length
+){
+
+    console.error(
+        "Missing required page data.",
+        {
+            disputeNumber,
+            disputeStatus,
+            ids,
+            arbitLinks
+        }
+    );
+
+    alert(
+        "Unable to continue.\n\n"+
+        "Missing Dispute Number, Dispute Status, or IDs."
+    );
+
+    return;
+}
+
+
+/* =========================================================
+   DEBUG
+   ========================================================= */
+
+console.log(
+    "========================================"
+);
+
+console.log(
+    "DISPUTE AUTO FILL STARTED"
+);
+
+console.log(
+    "Dispute Number:",
+    disputeNumber
+);
+
+console.log(
+    "Dispute Status:",
+    disputeStatus
+);
+
+console.log(
+    "Page Column J source:",
+    columnJValue
+);
+
+console.log(
+    "Page K value:",
+    columnKPageValue
+);
+
+console.log(
+    "ARBIT ID:",
+    arbitIdNumber
+);
+
+console.log(
+    "IDS FOUND FROM OPEN ARBIT LINKS:",
+    ids
+);
+
+console.log(
+    "ARBIT / APP LINKS:",
+    uniqueArbitLinks
+);
+
+console.log(
+    "Plan Types:",
+    planTypes
+);
+
+console.log(
+    "========================================"
+);
+
+
+/* =========================================================
+   SAME ID
+   ========================================================= */
+
+const sameId=
+    ids.every(id=>id===ids[0]);
+
+
+/* =========================================================
+   PLAN TYPE
+   ========================================================= */
+
+const getPlanType=i=>{
+
+    return(
+        planTypes[i]||
+        planTypes[0]||
+        ""
+    ).trim();
+
 };
 
-initialsWrap.appendChild(initialsInput);
-initialsWrap.appendChild(saveBtn);
 
-popup.appendChild(initialsWrap);
-        const topClose = document.createElement('button');
+/* =========================================================
+   COLUMN R / NOTES RULE
+   ========================================================= */
 
-        topClose.textContent = '✕';
+const getColumnRValue=(actualG,actualL)=>{
 
-        topClose.style.cssText =
-            'position:absolute;' +
-            'top:10px;' +
-            'right:10px;' +
-            'width:40px;' +
-            'height:40px;' +
-            'background:#333;' +
-            'color:#fff;' +
-            'font-weight:900;' +
-            'font-size:22px;' +
-            'border:none;' +
-            'border-radius:6px;' +
-            'cursor:pointer;';
+    const g=normalizeValue(actualG);
+    const l=normalizeValue(actualL);
 
-        topClose.onclick = function () {
-            popup.remove();
-        };
 
-        popup.appendChild(topClose);
+    console.log(
+        "========================================"
+    );
 
-        comments.forEach(txt => {
-                     const btn = document.createElement('button');
+    console.log(
+        "R / NOTES RULE CHECK"
+    );
 
-            let bg = '#f0f0f0';
+    console.log(
+        "G / Dispute Review Status:",
+        actualG
+    );
 
-            if (txt.startsWith('Ineligible to Submit:')) {
-                bg = '#ff8080';
-            } else if (
-                txt.startsWith('Dispute is pending VOB:') ||
-                txt === 'Dispute is Pending: No Plan Type Indicated in Arbit.'
-            ) {
-                bg = '#fff176';
-            } else if (txt.startsWith('Pending Onshore Review:')) {
-                bg = '#ffb6e6';
-            }
+    console.log(
+        "Normalized G:",
+        g
+    );
 
-            btn.style.cssText =
-                'display:block;' +
-                'width:100%;' +
-                'text-align:left;' +
-                'margin:4px 0;' +
-                'padding:10px;' +
-                'border:2px solid #666;' +
-                'border-radius:6px;' +
-                'background:' + bg + ';' +
-                'cursor:pointer;' +
-                'font-weight:900;' +
-                'color:#000000;' +
-                'font-size:16px;' +
-                'line-height:1.4;';
+    console.log(
+        "L / Dispute Status:",
+        actualL
+    );
 
-            btn.textContent = txt;
+    console.log(
+        "Normalized L:",
+        l
+    );
 
-            btn.onclick = function () {
 
-                let finalComment = txt;
+    /* =====================================================
+       COLUMN L = CLOSED
+       ===================================================== */
 
-                if (txt === 'Ineligible to Submit: Case (Ineligibility reason)') {
+    if(
+        l==="closed"||
+        l.includes("closed")
+    ){
 
-                    const reason = prompt(
-                        'Enter the Ineligibility reason:',
-                        ''
-                    );
+        console.log(
+            "R RULE MATCH: L = CLOSED"
+        );
 
-                    if (reason === null) {
-                        return;
-                    }
+        return(
+            "Completed. Dispute is Closed Due to Receiving Payment Determination."
+        );
 
-                    if (reason.trim() === '') {
-                        return;
-                    }
-
-                    finalComment =
-                        'Ineligible to Submit: Case (' +
-                        reason.trim() +
-                        ')';
-                }
-
-                const existingText = el.value || '';
-
-                if (existingText.includes(finalComment)) {
-
-                    const proceed = confirm(
-                        'WARNING:\n\n' +
-                        'This comment already exists in the comment box.\n\n' +
-                        'Do you want to proceed anyway?'
-                    );
-
-                    if (!proceed) {
-                        return;
-                    }
-                }
-
-                const d = new Date();
-
-                const mm = String(
-                    d.getMonth() + 1
-                ).padStart(2, '0');
-
-                const dd = String(
-                    d.getDate()
-                ).padStart(2, '0');
-
-                const yy = String(
-                    d.getFullYear()
-                ).slice(-2);
-
-                const initials =
-    (
-        localStorage.getItem('vobCommentInitials') ||
-        'ALD'
-    )
-    .trim()
-    .toUpperCase();
-
-const note =
-    `${mm}/${dd}/${yy} ${finalComment} - ${initials}`;
-
-                el.value =
-                    note +
-                    (
-                        el.value.trim()
-                            ? '\n\n' + el.value
-                            : ''
-                    );
-
-                el.dispatchEvent(
-                    new Event(
-                        'input',
-                        { bubbles: true }
-                    )
-                );
-
-                el.dispatchEvent(
-                    new Event(
-                        'change',
-                        { bubbles: true }
-                    )
-                );
-
-                popup.remove();
-            };
-
-            btn.onmouseover = function () {
-                this.style.filter = 'brightness(95%)';
-            };
-
-            btn.onmouseout = function () {
-                this.style.filter = 'brightness(100%)';
-            };
-
-            popup.appendChild(btn);
-        });
-
-        const close = document.createElement('button');
-
-        close.textContent = 'CLOSE';
-
-        close.style.cssText =
-            'margin-top:10px;' +
-            'padding:10px 25px;' +
-            'background:#333;' +
-            'color:#fff;' +
-            'font-weight:900;' +
-            'font-size:15px;' +
-            'border:none;' +
-            'border-radius:6px;' +
-            'cursor:pointer;';
-
-        close.onclick = function () {
-            popup.remove();
-        };
-
-        popup.appendChild(close);
-
-        document.body.appendChild(popup);
     }
 
-})(); 
+
+    /* =====================================================
+       COLUMN G = PLAN TYPE VALIDATED
+       ===================================================== */
+
+    if(
+        g.includes(
+            "plan type validated post idr initiation"
+        )
+    ){
+
+        console.log(
+            "R RULE MATCH: PLAN TYPE VALIDATED"
+        );
+
+        return(
+            "VOB verified, Plan Type Validated Post IDR Initiation – Eligible (Federal NSA)."
+        );
+
+    }
+
+
+    /* =====================================================
+       COLUMN G = PLAN TYPE OBJECTION SUBMITTED
+       ===================================================== */
+
+    if(
+        g.includes(
+            "plan type objection submitted"
+        )
+    ){
+
+        console.log(
+            "R RULE MATCH: PLAN TYPE OBJECTION SUBMITTED"
+        );
+
+        return(
+            "Already completed by Onshore."
+        );
+
+    }
+
+
+    /* =====================================================
+       COLUMN G = TIMELINE ENFORCEMENT SUBMITTED TO IDRE
+       ===================================================== */
+
+    if(
+        g.includes(
+            "timeline enforcement submitted to idre"
+        )
+    ){
+
+        console.log(
+            "R RULE MATCH: TIMELINE ENFORCEMENT SUBMITTED TO IDRE"
+        );
+
+        return(
+            "Already completed by Onshore."
+        );
+
+    }
+
+
+    /* =====================================================
+       COLUMN G = ADDITIONAL INFO PROVIDED TO IDRE
+       THROUGH EMAIL
+       ===================================================== */
+
+    if(
+        g.includes(
+            "additional info provided to idre through email"
+        )
+    ){
+
+        console.log(
+            "R RULE MATCH: ADDITIONAL INFO EMAIL"
+        );
+
+        return(
+            "VOB verified, evidence uploaded, Additional info requested, Arbit updated."
+        );
+
+    }
+
+
+    /* =====================================================
+       COLUMN G = ADDITIONAL INFO PROVIDED TO IDRE
+       THROUGH PORTAL
+       ===================================================== */
+
+    if(
+        g.includes(
+            "additional info provided to idre through portal"
+        )
+    ){
+
+        console.log(
+            "R RULE MATCH: ADDITIONAL INFO PORTAL"
+        );
+
+        return(
+            "VOB verified, evidence uploaded, Additional info requested, Arbit updated."
+        );
+
+    }
+
+
+    /* =====================================================
+       NO MATCH
+       ===================================================== */
+
+    console.warn(
+        "NO G/L -> R RULE MATCHED",
+        {
+            disputeReviewStatus:actualG,
+            disputeStatus:actualL
+        }
+    );
+
+    return"";
+
+};
+
+
+/* =========================================================
+   CLIPBOARD
+   ========================================================= */
+
+const copyText=async text=>{
+
+    try{
+
+        if(
+            navigator.clipboard &&
+            typeof navigator.clipboard.writeText==="function"
+        ){
+
+            await navigator.clipboard.writeText(text);
+
+            return true;
+        }
+
+    }catch(e){
+
+        console.warn(
+            "Clipboard API failed:",
+            e
+        );
+
+    }
+
+
+    try{
+
+        const textarea=
+            document.createElement("textarea");
+
+        textarea.value=text;
+        textarea.readOnly=true;
+
+        textarea.style.position="fixed";
+        textarea.style.left="-10000px";
+        textarea.style.top="0";
+        textarea.style.width="1px";
+        textarea.style.height="1px";
+        textarea.style.opacity="0";
+        textarea.style.pointerEvents="none";
+
+        document.body.appendChild(textarea);
+
+        textarea.focus();
+        textarea.select();
+
+        textarea.setSelectionRange(
+            0,
+            text.length
+        );
+
+        const copied=
+            document.execCommand("copy");
+
+        textarea.remove();
+
+        return copied;
+
+    }catch(e){
+
+        console.error(
+            "Clipboard fallback failed:",
+            e
+        );
+
+        return false;
+
+    }
+
+};
+
+
+/* =========================================================
+   COPY TOAST
+   ========================================================= */
+
+const showCopyMessage=(message,clipboardText)=>{
+
+    const old=
+        document.getElementById(
+            "dispute-copy-toast"
+        );
+
+    if(old)
+        old.remove();
+
+
+    const toast=
+        document.createElement("div");
+
+    toast.id=
+        "dispute-copy-toast";
+
+
+    toast.innerHTML=`
+
+        <div id="dct-message"></div>
+
+        <button id="dct-copy">
+            COPY AGAIN
+        </button>
+
+    `;
+
+
+    toast.style.cssText=
+    "position:fixed;right:12px;bottom:12px;left:auto;top:auto;transform:none;padding:10px 12px;border-radius:3px;background:#202a36;border:1px solid #465363;color:#fff;font:600 11px Arial,sans-serif;z-index:2147483647;box-shadow:0 4px 14px rgba(0,0,0,.45);width:390px;max-width:calc(100vw - 24px);text-align:left;box-sizing:border-box";
+
+    const messageEl=
+        toast.querySelector(
+            "#dct-message"
+        );
+
+
+    const copyAgainBtn=
+        toast.querySelector(
+            "#dct-copy"
+        );
+
+
+    messageEl.textContent=
+        message;
+
+
+    copyAgainBtn.style.cssText=
+    "margin-top:7px;height:28px;padding:0 11px;border:1px solid #536171;border-radius:2px;background:#303c4a;color:#fff;font:700 10px Arial,sans-serif;cursor:pointer";
+
+    copyAgainBtn.onclick=async()=>{
+
+        const ok=
+            await copyText(
+                clipboardText
+            );
+
+
+        copyAgainBtn.textContent=
+            ok
+                ?"COPIED ✓"
+                :"COPY FAILED";
+
+
+        if(ok){
+
+            setTimeout(()=>{
+
+                copyAgainBtn.textContent=
+                    "COPY AGAIN";
+
+            },1500);
+
+        }
+
+    };
+
+
+    document.body.appendChild(toast);
+
+
+    setTimeout(()=>{
+
+        if(toast.parentNode){
+
+            toast.style.transition=
+                "opacity .3s";
+
+            toast.style.opacity="0";
+
+
+            setTimeout(()=>{
+
+                if(toast.parentNode)
+                    toast.remove();
+
+            },300);
+
+        }
+
+    },5000);
+
+
+    return toast;
+
+};
+
+
+/* =========================================================
+   RUSH VERIFY
+   ========================================================= */
+
+const runRushVerify=iframe=>{
+
+    const scriptUrl=
+        "https://luckyph10.github.io/feeling_pogi_yarn/vob_intelligence.js?" +
+        Date.now();
+
+
+    try{
+
+        const doc=
+            iframe.contentDocument ||
+            iframe.contentWindow?.document;
+
+
+        if(!doc){
+
+            throw new Error(
+                "Unable to access iframe document."
+            );
+
+        }
+
+
+        const oldScript=
+            doc.getElementById(
+                "rush-verify-script"
+            );
+
+
+        if(oldScript)
+            oldScript.remove();
+
+
+        const script=
+            doc.createElement("script");
+
+
+        script.id=
+            "rush-verify-script";
+
+
+        script.src=
+            scriptUrl;
+
+
+        script.onload=()=>{
+
+            console.log(
+                "RUSH VERIFY loaded inside ARBIT iframe."
+            );
+
+        };
+
+
+        script.onerror=()=>{
+
+            alert(
+                "RUSH VERIFY: Load failed."
+            );
+
+        };
+
+
+        (
+            doc.head||
+            doc.documentElement
+        ).appendChild(
+            script
+        );
+
+
+    }catch(e){
+
+        console.error(
+            "RUSH VERIFY iframe error:",
+            e
+        );
+
+        alert(
+            "RUSH VERIFY could not run inside the ARBIT iframe.\n\n"+
+            "The iframe page may block cross-origin script injection."
+        );
+
+    }
+
+};
+
+
+/* =========================================================
+   PULL CASE / HISTORY EVIDENCE
+   ========================================================= */
+
+const runPullEvidence=iframe=>{
+
+    const scriptUrl=
+        "https://luckyph10.github.io/feeling_pogi_yarn/case_notes_puller.js?" +
+        Date.now();
+
+
+    try{
+
+        const doc=
+            iframe.contentDocument ||
+            iframe.contentWindow?.document;
+
+
+        if(!doc){
+
+            throw new Error(
+                "Unable to access iframe document."
+            );
+
+        }
+
+
+        const oldScript=
+            doc.getElementById(
+                "pull-case-history-evidence-script"
+            );
+
+
+        if(oldScript)
+            oldScript.remove();
+
+
+        const script=
+            doc.createElement("script");
+
+
+        script.id=
+            "pull-case-history-evidence-script";
+
+
+        script.src=
+            scriptUrl;
+
+
+        script.onload=()=>{
+
+            console.log(
+                "Pull Case/History Evidence loaded inside ARBIT iframe."
+            );
+
+        };
+
+
+        script.onerror=()=>{
+
+            alert(
+                "Pull Case/History Evidence: Load failed."
+            );
+
+        };
+
+
+        (
+            doc.head||
+            doc.documentElement
+        ).appendChild(
+            script
+        );
+
+
+    }catch(e){
+
+        console.error(
+            "Pull Case/History Evidence iframe error:",
+            e
+        );
+
+        alert(
+            "Pull Case/History Evidence could not run inside the ARBIT iframe.\n\n"+
+            "The iframe page may block cross-origin script injection."
+        );
+
+    }
+
+};
+
+
+/* =========================================================
+   VOB FILE VIEWER
+   ========================================================= */
+
+const openVobViewer=url=>{
+
+    if(!url)
+        return;
+
+
+    const old=
+        document.getElementById(
+            "vob-file-viewer-overlay"
+        );
+
+
+    if(old)
+        old.remove();
+
+
+    const viewer=
+        document.createElement("div");
+
+
+    viewer.id=
+        "vob-file-viewer-overlay";
+
+
+    viewer.innerHTML=`
+
+        <div id="vob-file-viewer-window">
+
+            <div id="vob-file-viewer-header">
+
+                <div id="vob-file-viewer-title">
+                    VOB FILE
+                </div>
+
+
+                <button
+                    id="vob-file-viewer-close"
+                    type="button"
+                    aria-label="Close VOB file"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <iframe
+                id="vob-file-viewer-frame"
+                src="${String(url).replace(/"/g,"&quot;")}"
+                frameborder="0"
+                allowfullscreen
+            ></iframe>
+
+        </div>
+
+    `;
+
+
+    document.body.appendChild(
+        viewer
+    );
+
+
+    const close=()=>{
+
+        viewer.remove();
+
+    };
+
+
+    viewer
+        .querySelector(
+            "#vob-file-viewer-close"
+        )
+        .onclick=
+            close;
+
+
+    viewer.addEventListener(
+        "mousedown",
+        e=>{
+
+            if(
+                e.target===viewer
+            ){
+
+                close();
+
+            }
+
+        }
+    );
+
+};
+
+
+/* =========================================================
+   INSTALL VOB IFRAME HANDLERS
+   ========================================================= */
+
+const installVobIframeHandlers=iframe=>{
+
+    const install=()=>{
+
+        try{
+
+            const win=
+                iframe.contentWindow;
+
+
+            const doc=
+                iframe.contentDocument||
+                win?.document;
+
+
+            if(!win||!doc)
+                return;
+
+
+            if(
+                !win.__disputeVobOpenPatched
+            ){
+
+                const originalOpen=
+                    win.open.bind(win);
+
+
+                win.open=function(
+                    url,
+                    target,
+                    features
+                ){
+
+                    const value=
+                        String(url||"");
+
+
+                    if(value){
+
+                        openVobViewer(
+                            value
+                        );
+
+                        return null;
+
+                    }
+
+
+                    return originalOpen(
+                        url,
+                        target,
+                        features
+                    );
+
+                };
+
+
+                win.__disputeVobOpenPatched=
+                    true;
+
+            }
+
+
+            if(
+                !doc.__disputeVobClickHandler
+            ){
+
+                doc.addEventListener(
+                    "click",
+                    e=>{
+
+                        const el=
+                            e.target instanceof Element
+                                ?e.target
+                                :null;
+
+
+                        if(!el)
+                            return;
+
+
+                        const link=
+                            el.closest("a");
+
+
+                        if(link){
+
+                            const text=
+                                (
+                                    link.innerText||
+                                    link.textContent||
+                                    link.title||
+                                    ""
+                                )
+                                .toLowerCase();
+
+
+                            const href=
+                                link.href||
+                                link.getAttribute(
+                                    "href"
+                                )||
+                                "";
+
+
+                            const isVob=
+                                /vob/.test(text)||
+                                /vob/.test(
+                                    String(
+                                        link.className||
+                                        ""
+                                    ).toLowerCase()
+                                );
+
+
+                            const isFile=
+                                /\.(pdf|docx?|xlsx?|csv|txt|png|jpe?g|gif|tiff?|bmp|webp)(?:[?#]|$)/i
+                                    .test(href);
+
+
+                            const opensOutside=
+                                link.target==="_blank"||
+                                link.target==="_new";
+
+
+                            if(
+                                (
+                                    isVob||
+                                    (
+                                        opensOutside&&
+                                        isFile
+                                    )
+                                )&&
+                                href
+                            ){
+
+                                e.preventDefault();
+                                e.stopPropagation();
+
+
+                                openVobViewer(
+                                    href
+                                );
+
+
+                                return;
+
+                            }
+
+                        }
+
+                    },
+                    true
+                );
+
+
+                doc.__disputeVobClickHandler=
+                    true;
+
+            }
+
+        }catch(e){
+
+            console.warn(
+                "Unable to install iframe VOB handlers:",
+                e
+            );
+
+        }
+
+    };
+
+
+    iframe.addEventListener(
+        "load",
+        install,
+        {
+            passive:true
+        }
+    );
+
+
+    try{
+
+        if(
+            iframe.contentDocument?.readyState===
+            "complete"
+        ){
+
+            install();
+
+        }
+
+    }catch(e){}
+
+};
+
+
+/* =========================================================
+   OPEN ARBIT / APP ID IFRAME
+   ========================================================= */
+
+const openArbitIframe=()=>{
+
+    const existingOverlay=
+        document.getElementById(
+            "arbit-iframe-overlay"
+        );
+
+
+    if(
+        existingOverlay &&
+        existingOverlay.dataset.minimized==="true"
+    ){
+
+        existingOverlay.dataset.minimized="false";
+
+        existingOverlay.style.setProperty(
+            "display",
+            "flex",
+            "important"
+        );
+
+
+        const existingVobViewer=
+            document.getElementById(
+                "vob-file-viewer-overlay"
+            );
+
+
+        if(existingVobViewer){
+
+            existingVobViewer.style.setProperty(
+                "display",
+                "flex",
+                "important"
+            );
+
+        }
+
+
+        try{
+
+            document
+                .getElementById(
+                    "arbit-iframe"
+                )
+                ?.focus();
+
+        }catch(e){}
+
+
+        return;
+
+    }
+
+
+    let appLinks=[
+        ...uniqueArbitLinks
+    ];
+
+
+    if(!appLinks.length){
+
+        const fallbackLink=
+            document.querySelector(
+                'a[title="Open Arbit"][href*="calculator/"]'
+            );
+
+
+        if(fallbackLink){
+
+            appLinks=[
+                {
+                    id:
+                        fallbackLink.textContent
+                            ?.replace(/\u00A0/g," ")
+                            .replace(/\r?\n/g," ")
+                            .replace(/\s+/g," ")
+                            .trim()||
+                        arbitIdNumber||
+                        "UNKNOWN",
+
+                    href:
+                        fallbackLink.href,
+
+                    index:0
+                }
+            ];
+
+        }
+
+    }
+
+
+    if(!appLinks.length){
+
+        alert(
+            "ARBIT ID link not found."
+        );
+
+        return;
+
+    }
+
+
+    const old=
+        document.getElementById(
+            "arbit-iframe-overlay"
+        );
+
+
+    if(old)
+        old.remove();
+
+
+    const oldStyle=
+        document.getElementById(
+            "arbit-iframe-style"
+        );
+
+
+    if(oldStyle)
+        oldStyle.remove();
+
+
+    let currentAppIndex=0;
+
+    let currentApp=
+        appLinks[currentAppIndex];
+
+
+    const overlay=
+        document.createElement("div");
+
+
+    overlay.id=
+        "arbit-iframe-overlay";
+
+
+    overlay.dataset.minimized=
+        "false";
+
+
+    overlay.innerHTML=`
+
+        <div id="arbit-iframe-window">
+
+            <div id="arbit-iframe-header">
+
+                <div id="arbit-iframe-left">
+
+                    <div id="arbit-iframe-title">
+
+                        ARBIT ID:
+
+                        <span id="arbit-iframe-number">
+                            ${String(currentApp.id||"UNKNOWN")
+                                .replace(/&/g,"&amp;")
+                                .replace(/</g,"&lt;")
+                                .replace(/>/g,"&gt;")
+                                .replace(/"/g,"&quot;")}
+                        </span>
+
+                    </div>
+
+
+                    ${
+                        appLinks.length>1
+                        ?`
+
+                        <div
+                            id="arbit-app-selector-wrap"
+                        >
+
+                            <select
+                                id="arbit-app-selector"
+                                title="Select another ARBIT / APP ID"
+                            >
+
+                                ${appLinks.map((item,index)=>`
+
+                                    <option
+                                        value="${index}"
+                                        ${index===0?"selected":""}
+                                    >
+                                        ${String(item.id||"UNKNOWN")
+                                            .replace(/&/g,"&amp;")
+                                            .replace(/</g,"&lt;")
+                                            .replace(/>/g,"&gt;")
+                                            .replace(/"/g,"&quot;")}
+                                    </option>
+
+                                `).join("")}
+
+                            </select>
+
+
+                            <button
+                                id="arbit-app-open"
+                                type="button"
+                                style="display:none"
+                            >
+                                OPEN
+                            </button>
+
+                        </div>
+
+                        `
+                        :""
+                    }
+
+                </div>
+
+
+                <div id="arbit-iframe-actions">
+
+                    <button
+                        id="arbit-rush-verify"
+                        type="button"
+                    >
+                        RUSH VERIFY
+                    </button>
+
+
+                    <button
+                        id="arbit-pull-evidence"
+                        type="button"
+                    >
+                        Pull Case/History Evidence
+                    </button>
+
+
+                    <button
+                        id="arbit-iframe-minimize"
+                        type="button"
+                        aria-label="Minimize ARBIT ID"
+                        title="Minimize"
+                    >
+                        −
+                    </button>
+
+
+                    <button
+                        id="arbit-iframe-close"
+                        type="button"
+                        aria-label="Close ARBIT ID"
+                        title="Close"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <iframe
+                id="arbit-iframe"
+                src="${String(currentApp.href).replace(/"/g,"&quot;")}"
+                frameborder="0"
+                allowfullscreen
+            ></iframe>
+
+        </div>
+
+    `;
+
+
+    const iframeStyle=
+        document.createElement("style");
+
+
+    iframeStyle.id=
+        "arbit-iframe-style";
+
+
+    iframeStyle.textContent=`
+
+        #arbit-iframe-overlay{
+            position:fixed!important;
+            inset:0!important;
+            width:100vw!important;
+            height:100vh!important;
+            background:rgba(0,0,0,.80)!important;
+            backdrop-filter:blur(6px)!important;
+            -webkit-backdrop-filter:blur(6px)!important;
+            z-index:2147483647!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:center!important;
+            padding:8px!important;
+            box-sizing:border-box!important;
+            isolation:isolate!important;
+        }
+
+        #arbit-iframe-window{
+            position:relative!important;
+            z-index:2147483647!important;
+            width:98vw!important;
+            height:96vh!important;
+            max-width:1900px!important;
+            background:#111!important;
+            border:2px solid rgba(255,255,255,.22)!important;
+            border-radius:14px!important;
+            overflow:hidden!important;
+            box-shadow:0 25px 90px rgba(0,0,0,.85)!important;
+            display:flex!important;
+            flex-direction:column!important;
+        }
+
+        #arbit-iframe-header{
+            position:relative!important;
+            z-index:3!important;
+            height:54px!important;
+            min-height:54px!important;
+            background:#151515!important;
+            border-bottom:1px solid rgba(255,255,255,.18)!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:space-between!important;
+            gap:10px!important;
+            padding:0 10px 0 16px!important;
+            box-sizing:border-box!important;
+        }
+
+        #arbit-iframe-left{
+            display:flex!important;
+            align-items:center!important;
+            gap:10px!important;
+            min-width:0!important;
+            flex:1!important;
+        }
+
+        #arbit-iframe-title{
+            color:#fff!important;
+            font-family:Arial,sans-serif!important;
+            font-size:14px!important;
+            font-weight:800!important;
+            letter-spacing:.3px!important;
+            white-space:nowrap!important;
+            display:flex!important;
+            align-items:center!important;
+            gap:4px!important;
+            flex-shrink:0!important;
+        }
+
+        #arbit-iframe-number{
+            color:#facc15!important;
+            font-weight:900!important;
+            margin-left:2px!important;
+            text-shadow:0 1px 4px rgba(0,0,0,.4)!important;
+        }
+
+        #arbit-app-selector-wrap{
+            display:flex!important;
+            align-items:center!important;
+            gap:6px!important;
+            min-width:0!important;
+        }
+
+        #arbit-app-selector{
+            height:38px!important;
+            min-width:150px!important;
+            max-width:260px!important;
+            padding:0 32px 0 11px!important;
+            border:1px solid rgba(255,255,255,.25)!important;
+            border-radius:8px!important;
+            background:#222!important;
+            color:#fff!important;
+            font-family:Arial,sans-serif!important;
+            font-size:12px!important;
+            font-weight:700!important;
+            outline:none!important;
+            cursor:pointer!important;
+            box-sizing:border-box!important;
+        }
+
+        #arbit-app-selector:hover{
+            border-color:rgba(255,255,255,.45)!important;
+        }
+
+        #arbit-app-selector:focus{
+            border-color:#facc15!important;
+            box-shadow:0 0 0 3px rgba(250,204,21,.12)!important;
+        }
+
+        #arbit-app-selector option{
+            background:#222!important;
+            color:#fff!important;
+        }
+
+        #arbit-app-open{
+            height:38px!important;
+            padding:0 14px!important;
+            border:1px solid rgba(255,255,255,.2)!important;
+            border-radius:8px!important;
+            background:#f59e0b!important;
+            color:#111!important;
+            font-family:Arial,sans-serif!important;
+            font-size:12px!important;
+            font-weight:900!important;
+            letter-spacing:.3px!important;
+            cursor:pointer!important;
+            white-space:nowrap!important;
+            box-shadow:0 4px 14px rgba(0,0,0,.3)!important;
+        }
+
+        #arbit-app-open:hover{
+            background:#fbbf24!important;
+            transform:translateY(-1px)!important;
+        }
+
+        #arbit-app-open:active{
+            transform:translateY(0)!important;
+        }
+
+        #arbit-iframe-actions{
+            display:flex!important;
+            align-items:center!important;
+            justify-content:flex-end!important;
+            gap:8px!important;
+            flex-wrap:nowrap!important;
+            flex-shrink:0!important;
+        }
+
+        #arbit-rush-verify{
+            height:38px!important;
+            padding:0 16px!important;
+            border:1px solid rgba(255,255,255,.2)!important;
+            border-radius:8px!important;
+            background:#16a34a!important;
+            color:#fff!important;
+            font-family:Arial,sans-serif!important;
+            font-size:12px!important;
+            font-weight:800!important;
+            letter-spacing:.35px!important;
+            cursor:pointer!important;
+            white-space:nowrap!important;
+            box-shadow:0 4px 14px rgba(0,0,0,.3)!important;
+        }
+
+        #arbit-rush-verify:hover{
+            background:#22c55e!important;
+            box-shadow:0 5px 18px rgba(34,197,94,.4)!important;
+        }
+
+        #arbit-pull-evidence{
+            height:38px!important;
+            padding:0 16px!important;
+            border:1px solid rgba(255,255,255,.2)!important;
+            border-radius:8px!important;
+            background:#2563eb!important;
+            color:#fff!important;
+            font-family:Arial,sans-serif!important;
+            font-size:12px!important;
+            font-weight:800!important;
+            letter-spacing:.2px!important;
+            cursor:pointer!important;
+            white-space:nowrap!important;
+            box-shadow:0 4px 14px rgba(0,0,0,.3)!important;
+        }
+
+        #arbit-pull-evidence:hover{
+            background:#3b82f6!important;
+            box-shadow:0 5px 18px rgba(59,130,246,.4)!important;
+        }
+
+        #arbit-iframe-minimize{
+            width:38px!important;
+            height:38px!important;
+            border:0!important;
+            border-radius:50%!important;
+            background:rgba(250,204,21,.18)!important;
+            color:#facc15!important;
+            font-size:25px!important;
+            font-weight:900!important;
+            line-height:1!important;
+            cursor:pointer!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:center!important;
+            flex-shrink:0!important;
+            padding:0!important;
+        }
+
+        #arbit-iframe-minimize:hover{
+            background:rgba(250,204,21,.32)!important;
+        }
+
+        #arbit-iframe-close{
+            width:38px!important;
+            height:38px!important;
+            border:0!important;
+            border-radius:50%!important;
+            background:#dc2626!important;
+            color:#fff!important;
+            font-size:27px!important;
+            line-height:1!important;
+            cursor:pointer!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:center!important;
+            flex-shrink:0!important;
+            padding:0!important;
+        }
+
+        #arbit-iframe-close:hover{
+            background:#ef4444!important;
+        }
+
+        #arbit-iframe{
+            position:relative!important;
+            z-index:1!important;
+            width:100%!important;
+            height:calc(100% - 54px)!important;
+            flex:1!important;
+            border:0!important;
+            background:#fff!important;
+        }
+
+        #vob-file-viewer-overlay{
+            position:fixed!important;
+            inset:0!important;
+            width:100vw!important;
+            height:100vh!important;
+            background:rgba(0,0,0,.84)!important;
+            backdrop-filter:blur(6px)!important;
+            -webkit-backdrop-filter:blur(6px)!important;
+            z-index:2147483647!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:center!important;
+            padding:10px!important;
+            box-sizing:border-box!important;
+            isolation:isolate!important;
+        }
+
+        #vob-file-viewer-window{
+            width:96vw!important;
+            height:94vh!important;
+            max-width:1800px!important;
+            background:#111!important;
+            border:1px solid rgba(255,255,255,.25)!important;
+            border-radius:14px!important;
+            overflow:hidden!important;
+            box-shadow:0 25px 100px rgba(0,0,0,.9)!important;
+            display:flex!important;
+            flex-direction:column!important;
+        }
+
+        #vob-file-viewer-header{
+            height:48px!important;
+            min-height:48px!important;
+            background:#151515!important;
+            border-bottom:1px solid rgba(255,255,255,.18)!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:space-between!important;
+            padding:0 10px 0 16px!important;
+        }
+
+        #vob-file-viewer-title{
+            color:#fff!important;
+            font:800 13px Arial,sans-serif!important;
+        }
+
+        #vob-file-viewer-close{
+            width:36px!important;
+            height:36px!important;
+            border:0!important;
+            border-radius:50%!important;
+            background:rgba(255,255,255,.08)!important;
+            color:#fff!important;
+            font-size:26px!important;
+            cursor:pointer!important;
+        }
+
+        #vob-file-viewer-close:hover{
+            background:rgba(220,40,40,.95)!important;
+        }
+
+        #vob-file-viewer-frame{
+            width:100%!important;
+            height:calc(100% - 48px)!important;
+            flex:1!important;
+            border:0!important;
+            background:#fff!important;
+        }
+
+        @media(max-width:1250px){
+
+            #arbit-iframe-header{
+                gap:5px!important;
+            }
+
+            #arbit-iframe-left{
+                gap:6px!important;
+            }
+
+            #arbit-app-selector{
+                min-width:125px!important;
+                max-width:180px!important;
+            }
+
+            #arbit-rush-verify,
+            #arbit-pull-evidence{
+                padding:0 10px!important;
+                font-size:10px!important;
+            }
+
+        }
+
+        @media(max-width:950px){
+
+            #arbit-iframe-title{
+                font-size:12px!important;
+            }
+
+            #arbit-app-selector{
+                min-width:110px!important;
+                max-width:145px!important;
+            }
+
+            #arbit-app-open{
+                padding:0 10px!important;
+            }
+
+            #arbit-rush-verify,
+            #arbit-pull-evidence{
+                padding:0 7px!important;
+                font-size:9px!important;
+            }
+
+        }
+
+        @media(max-width:700px){
+
+            #arbit-iframe-overlay{
+                padding:4px!important;
+            }
+
+            #arbit-iframe-window{
+                width:100vw!important;
+                height:98vh!important;
+                border-radius:10px!important;
+            }
+
+            #arbit-iframe-header{
+                padding-left:8px!important;
+                gap:4px!important;
+            }
+
+            #arbit-iframe-left{
+                gap:4px!important;
+            }
+
+            #arbit-iframe-title{
+                font-size:10px!important;
+            }
+
+            #arbit-iframe-number{
+                font-size:10px!important;
+            }
+
+            #arbit-app-selector{
+                min-width:85px!important;
+                max-width:120px!important;
+                height:34px!important;
+                font-size:9px!important;
+            }
+
+            #arbit-app-open{
+                height:34px!important;
+                padding:0 8px!important;
+                font-size:9px!important;
+            }
+
+            #arbit-rush-verify,
+            #arbit-pull-evidence{
+                height:34px!important;
+                padding:0 5px!important;
+                font-size:8px!important;
+            }
+
+            #arbit-iframe-minimize,
+            #arbit-iframe-close{
+                width:34px!important;
+                height:34px!important;
+            }
+
+        }
+
+    `;
+
+
+    document.head.appendChild(
+        iframeStyle
+    );
+
+
+    document.body.appendChild(
+        overlay
+    );
+
+  /* =====================================================
+   POSITION POPUP UNDER SERVICE LINE SELECTOR
+   ===================================================== */
+
+const positionPopupUnderServiceLine=()=>{
+
+    const popupElement=
+        document.getElementById(
+            "dispute-popup"
+        );
+
+    if(!popupElement)
+        return;
+
+
+    /*
+     * Find the "Service Line" label.
+     */
+    const serviceLineLabel=[
+        ...document.querySelectorAll(
+            "span.input-group-text"
+        )
+    ].find(el=>
+        (
+            el.textContent||""
+        )
+        .replace(/\u00A0/g," ")
+        .replace(/\s+/g," ")
+        .trim()
+        .toLowerCase()
+        ===
+        "service line"
+    );
+
+
+    if(!serviceLineLabel){
+
+        console.warn(
+            "Service Line label not found."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Find the ng-select associated with the
+     * Service Line field.
+     */
+    let serviceLineSelector=
+        serviceLineLabel
+            .parentElement
+            ?.querySelector(
+                "ng-select"
+            );
+
+
+    /*
+     * If the ng-select is not in the same parent,
+     * walk upward until the associated selector
+     * is found.
+     */
+    if(!serviceLineSelector){
+
+        let parent=
+            serviceLineLabel.parentElement;
+
+        for(
+            let i=0;
+            i<5 && parent;
+            i++
+        ){
+
+            serviceLineSelector=
+                parent.querySelector(
+                    "ng-select"
+                );
+
+            if(serviceLineSelector)
+                break;
+
+            parent=
+                parent.parentElement;
+
+        }
+
+    }
+
+
+    /*
+     * Fallback: locate the ng-select containing
+     * the supplied .ng-input / combobox.
+     */
+    if(!serviceLineSelector){
+
+        const serviceInput=
+            [...document.querySelectorAll(
+                ".ng-input input[role='combobox']"
+            )].find(input=>{
+
+                const ngSelect=
+                    input.closest(
+                        "ng-select"
+                    );
+
+                if(!ngSelect)
+                    return false;
+
+                const parentText=
+                    ngSelect.parentElement
+                        ?.parentElement
+                        ?.textContent||"";
+
+                return /service\s*line/i.test(
+                    parentText
+                );
+
+            });
+
+
+        serviceLineSelector=
+            serviceInput
+                ?.closest(
+                    "ng-select"
+                );
+
+    }
+
+
+    if(!serviceLineSelector){
+
+        console.warn(
+            "Service Line ng-select not found."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Use the actual rendered selector position.
+     */
+    const rect=
+        serviceLineSelector.getBoundingClientRect();
+
+
+    const popupWidth=
+        popupElement.offsetWidth||390;
+
+
+    const viewportWidth=
+        window.innerWidth;
+
+
+    /*
+     * Keep the popup aligned with the selector,
+     * while preventing it from going off-screen.
+     */
+    let left=
+        rect.left;
+
+
+    if(
+        left+popupWidth>
+        viewportWidth-12
+    ){
+
+        left=
+            viewportWidth-
+            popupWidth-
+            12;
+
+    }
+
+
+    if(left<12)
+        left=12;
+
+
+    /*
+     * Place popup directly underneath
+     * the Service Line selector.
+     */
+    const top=
+        rect.bottom+6;
+
+
+    popupElement.style.setProperty(
+        "left",
+        `${Math.round(left)}px`,
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "top",
+        `${Math.round(top)}px`,
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "right",
+        "auto",
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "bottom",
+        "auto",
+        "important"
+    );
+
+};
+
+
+/*
+ * Position after the popup has been rendered.
+ */
+requestAnimationFrame(
+    positionPopupUnderServiceLine
+);
+
+
+/*
+ * Keep the popup underneath the selector if
+ * the page is resized or scrolled.
+ */
+window.addEventListener(
+    "resize",
+    positionPopupUnderServiceLine,
+    {
+        passive:true
+    }
+);
+
+
+window.addEventListener(
+    "scroll",
+    positionPopupUnderServiceLine,
+    {
+        passive:true,
+        capture:true
+    }
+);
+
+
+    const iframe=
+        document.getElementById(
+            "arbit-iframe"
+        );
+
+
+    const rushBtn=
+        document.getElementById(
+            "arbit-rush-verify"
+        );
+
+
+    const pullEvidenceBtn=
+        document.getElementById(
+            "arbit-pull-evidence"
+        );
+
+
+    const minimizeBtn=
+        document.getElementById(
+            "arbit-iframe-minimize"
+        );
+
+
+    const closeBtn=
+        document.getElementById(
+            "arbit-iframe-close"
+        );
+
+
+    const iframeNumberElement=
+        document.getElementById(
+            "arbit-iframe-number"
+        );
+
+
+    const appSelector=
+        document.getElementById(
+            "arbit-app-selector"
+        );
+
+
+    const appOpenBtn=
+        document.getElementById(
+            "arbit-app-open"
+        );
+
+
+    const updateCurrentIdDisplay=()=>{
+
+        if(!iframeNumberElement)
+            return;
+
+
+        iframeNumberElement.textContent=
+            currentApp?.id||
+            "UNKNOWN";
+
+    };
+
+
+    if(appSelector){
+
+        appSelector.addEventListener(
+            "change",
+            ()=>{
+
+                const selectedIndex=
+                    Number(
+                        appSelector.value
+                    );
+
+
+                if(
+                    !Number.isInteger(
+                        selectedIndex
+                    )||
+                    !appLinks[selectedIndex]
+                ){
+
+                    return;
+
+                }
+
+
+                if(
+                    selectedIndex===
+                    currentAppIndex
+                ){
+
+                    if(appOpenBtn)
+                        appOpenBtn.style.display=
+                            "none";
+
+                }else{
+
+                    if(appOpenBtn)
+                        appOpenBtn.style.display=
+                            "inline-flex";
+
+                }
+
+            }
+
+        );
+
+    }
+
+
+    if(appOpenBtn){
+
+        appOpenBtn.addEventListener(
+            "click",
+            ()=>{
+
+                if(!appSelector)
+                    return;
+
+
+                const selectedIndex=
+                    Number(
+                        appSelector.value
+                    );
+
+
+                if(
+                    !Number.isInteger(
+                        selectedIndex
+                    )||
+                    !appLinks[selectedIndex]
+                ){
+
+                    return;
+
+                }
+
+
+                if(
+                    selectedIndex===
+                    currentAppIndex
+                ){
+
+                    appOpenBtn.style.display=
+                        "none";
+
+                    return;
+
+                }
+
+
+                const selectedApp=
+                    appLinks[selectedIndex];
+
+
+                console.log(
+                    "Opening selected APP / ARBIT ID in SAME iframe:",
+                    selectedApp
+                );
+
+
+                currentAppIndex=
+                    selectedIndex;
+
+
+                currentApp=
+                    selectedApp;
+
+
+                iframe.src=
+                    selectedApp.href;
+
+
+                updateCurrentIdDisplay();
+
+
+                appOpenBtn.style.display=
+                    "none";
+
+
+                appSelector.value=
+                    String(
+                        currentAppIndex
+                    );
+
+            }
+
+        );
+
+    }
+
+
+    updateCurrentIdDisplay();
+
+
+    try{
+
+        overlay.style.setProperty(
+            "z-index",
+            "2147483647",
+            "important"
+        );
+
+        overlay.style.setProperty(
+            "position",
+            "fixed",
+            "important"
+        );
+
+        overlay.style.setProperty(
+            "inset",
+            "0",
+            "important"
+        );
+
+        overlay.style.setProperty(
+            "isolation",
+            "isolate",
+            "important"
+        );
+
+    }catch(e){
+
+        console.warn(
+            "Could not force iframe stacking:",
+            e
+        );
+
+    }
+
+
+    rushBtn.onclick=()=>{
+
+        runRushVerify(
+            iframe
+        );
+
+    };
+
+
+    pullEvidenceBtn.onclick=()=>{
+
+        runPullEvidence(
+            iframe
+        );
+
+    };
+
+
+    installVobIframeHandlers(
+        iframe
+    );
+
+
+    const minimizeIframe=()=>{
+
+        overlay.dataset.minimized=
+            "true";
+
+
+        overlay.style.setProperty(
+            "display",
+            "none",
+            "important"
+        );
+
+    };
+
+
+    minimizeBtn.onclick=
+        minimizeIframe;
+
+
+    const closeIframe=()=>{
+
+        const vobViewer=
+            document.getElementById(
+                "vob-file-viewer-overlay"
+            );
+
+
+        if(vobViewer)
+            vobViewer.remove();
+
+
+        overlay.remove();
+        iframeStyle.remove();
+
+    };
+
+
+    closeBtn.onclick=
+        closeIframe;
+
+
+    overlay.addEventListener(
+        "mousedown",
+        e=>{
+
+            if(
+                e.target===overlay
+            ){
+
+                closeIframe();
+
+            }
+
+        }
+    );
+
+
+    overlay.addEventListener(
+        "keydown",
+        e=>{
+
+            if(
+                e.key==="Escape"
+            ){
+
+                e.preventDefault();
+
+
+                const vobViewer=
+                    document.getElementById(
+                        "vob-file-viewer-overlay"
+                    );
+
+
+                if(vobViewer){
+
+                    vobViewer.remove();
+
+                }else{
+
+                    closeIframe();
+
+                }
+
+            }
+
+        },
+        true
+    );
+
+
+    setTimeout(()=>{
+
+        try{
+
+            closeBtn.focus();
+
+        }catch(e){}
+
+    },50);
+
+};
+
+
+/* =========================================================
+   MAIN DISPUTE POPUP
+   ========================================================= */
+
+const popup=()=>new Promise(resolve=>{
+
+    const old=
+        document.getElementById(
+            "dispute-popup-overlay"
+        );
+
+
+    if(old)
+        old.remove();
+
+
+    const overlay=
+        document.createElement("div");
+
+
+    overlay.id=
+        "dispute-popup-overlay";
+
+
+    overlay.innerHTML=`
+
+        <div id="dispute-popup">
+
+            <button id="dp-close">
+                ×
+            </button>
+
+
+            <div id="dp-title-row">
+
+                <div id="dp-title">
+                    Dispute Information
+                </div>
+
+
+                <button
+                    id="dp-arbit-id"
+                    type="button"
+                >
+                    ARBIT ID
+                </button>
+
+            </div>
+
+
+            <div id="dp-label-processor">
+                Processor Name
+            </div>
+
+
+            <div id="dp-processor-row">
+
+                <input
+                    id="dp-processor"
+                    type="text"
+                    placeholder="Enter Processor Name"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div id="dp-label-name">
+                Dispute User Name
+            </div>
+
+
+            <div id="dp-name-row">
+
+                <input
+                    id="dp-name"
+                    type="text"
+                    placeholder="Enter Dispute User Name"
+                    autocomplete="off"
+                >
+
+
+                <button id="dp-edit">
+                    Edit
+                </button>
+
+
+                <span id="dp-saved">
+                    Saved ✓
+                </span>
+
+
+                <button id="dp-save">
+                    Save
+                </button>
+
+            </div>
+
+
+            <div id="dp-label-state">
+                State + Duplicate Comments
+            </div>
+
+
+            <div id="dp-state-row">
+
+                <input
+                    id="dp-state"
+                    type="text"
+                    placeholder="Enter State"
+                    autocomplete="off"
+                >
+
+
+                <select id="dp-duplicate-comments">
+
+                    <option
+                        value=""
+                        selected
+                        disabled
+                    >
+                        Select Duplicate Dispute Comments
+                    </option>
+
+
+                    <option value="Duplicate Dispute Reviewed">
+                        Duplicate Dispute Reviewed
+                    </option>
+
+
+                    <option value="N/A">
+                        N/A
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div id="dp-label-mismatch">
+                Plantype Mismatch
+            </div>
+
+
+            <select id="dp-mismatch">
+
+                <option
+                    value=""
+                    selected
+                    disabled
+                >
+                    Select Yes or No
+                </option>
+
+
+                <option value="Yes">
+                    Yes
+                </option>
+
+
+                <option value="No">
+                    No
+                </option>
+
+            </select>
+
+
+            <button id="dp-go">
+                Go
+            </button>
+
+
+            <div id="dp-status"></div>
+
+
+            <div
+                id="dp-eligible"
+                style="display:none"
+            >
+
+                <div id="dp-eligible-title">
+                    Eligible updated today?
+                </div>
+
+
+                <div id="dp-eligible-buttons">
+
+                    <button id="dp-no">
+                        NO
+                    </button>
+
+
+                    <button id="dp-yes">
+                        YES
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="dp-yes-extra"
+                    style="display:none"
+                >
+
+                    <div id="dp-label-email">
+                        PLANTYPE_IDRE_EMAIL
+                    </div>
+
+
+                    <input
+                        id="dp-email"
+                        type="text"
+                        placeholder="Enter PLANTYPE_IDRE_EMAIL"
+                        autocomplete="off"
+                    >
+
+
+                    <div id="dp-label-arbit-notes">
+                        Arbit Case Notes
+                    </div>
+
+
+                    <input
+                        id="dp-arbit-notes"
+                        type="text"
+                        placeholder="Enter Arbit Case Notes"
+                        autocomplete="off"
+                    >
+
+
+                    <div id="dp-label-plan-evidence">
+                        Plan Type Evidence?
+                    </div>
+
+
+                    <select id="dp-plan-evidence">
+
+                        <option
+                            value=""
+                            selected
+                            disabled
+                        >
+                            Select Plan Type Evidence
+                        </option>
+
+
+                        <option value="Yes - VOB">
+                            Yes - VOB
+                        </option>
+
+
+                        <option value="Yes - VOB Team">
+                            Yes - VOB Team
+                        </option>
+
+
+                        <option value="Yes - Insurance Card">
+                            Yes - Insurance Card
+                        </option>
+
+
+                        <option value="Yes - State Authority">
+                            Yes - State Authority
+                        </option>
+
+
+                        <option value="Yes - EOB">
+                            Yes - EOB
+                        </option>
+
+                    </select>
+
+
+                    <div id="dp-label-verified">
+                        Verified?
+                    </div>
+
+
+                    <select id="dp-verified">
+
+                        <option value="">
+                            Select Yes or No
+                        </option>
+
+
+                        <option value="Yes">
+                            Yes
+                        </option>
+
+
+                        <option value="No">
+                            No
+                        </option>
+
+                    </select>
+
+
+                    <div id="dp-label-non-bifurcated">
+                        Non-Bifurcated state/Federal.
+                    </div>
+
+
+                    <select id="dp-non-bifurcated">
+
+                        <option
+                            value=""
+                            selected
+                            disabled
+                        >
+                            Select N/A or Yes
+                        </option>
+
+
+                        <option value="N/A">
+                            N/A
+                        </option>
+
+
+                        <option value="Yes">
+                            Yes
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        id="dp-continue"
+                        disabled
+                    >
+                        Continue
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+/* =========================================================
+   STYLE
+   ========================================================= */
+
+const style=
+    document.createElement("style");
+
+
+style.id=
+    "dispute-popup-style";
+
+
+style.textContent=`
+
+    /* =====================================================
+       DISPUTE POPUP — LOWER RIGHT APPLICATION PANEL
+       ===================================================== */
+
+    #dispute-popup-overlay{
+        position:fixed!important;
+        inset:0!important;
+        width:100vw!important;
+        height:100vh!important;
+        z-index:2147483646!important;
+        pointer-events:none!important;
+        isolation:isolate!important;
+    }
+
+
+    #dispute-popup{
+    pointer-events:auto!important;
+    position:fixed!important;
+
+    /*
+     * Position is calculated dynamically underneath
+     * the Service Line selector.
+     */
+    right:auto!important;
+    bottom:auto!important;
+    left:0!important;
+    top:0!important;
+
+    width:390px!important;
+    max-width:calc(100vw - 24px)!important;
+
+    max-height:calc(100vh - 78px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+
+    padding:14px!important;
+
+    border-radius:4px!important;
+
+    background:#202a36!important;
+    border:1px solid #465363!important;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,.45)!important;
+
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+
+    font-family:Arial,sans-serif!important;
+    color:#fff!important;
+    box-sizing:border-box!important;
+}
+
+    /* =====================================================
+       HEADER
+       ===================================================== */
+
+    #dp-title-row{
+        display:flex!important;
+        align-items:center!important;
+        justify-content:space-between!important;
+        gap:8px!important;
+
+        margin-bottom:10px!important;
+        padding-right:30px!important;
+
+        min-height:30px!important;
+    }
+
+
+    #dp-title{
+        font-size:14px!important;
+        line-height:18px!important;
+        font-weight:700!important;
+        color:#fff!important;
+        margin:0!important;
+    }
+
+
+    #dp-arbit-id{
+        height:29px!important;
+        padding:0 9px!important;
+
+        border:1px solid #657386!important;
+        border-radius:3px!important;
+
+        background:#303c4a!important;
+        color:#fff!important;
+
+        font-size:10px!important;
+        font-weight:700!important;
+        letter-spacing:.2px!important;
+
+        cursor:pointer!important;
+        white-space:nowrap!important;
+
+        box-shadow:none!important;
+    }
+
+
+    #dp-arbit-id:hover{
+        background:#3c4b5d!important;
+        transform:none!important;
+    }
+
+
+    #dp-close{
+        position:absolute!important;
+        top:5px!important;
+        right:6px!important;
+
+        width:25px!important;
+        height:25px!important;
+
+        border:0!important;
+        border-radius:3px!important;
+
+        background:transparent!important;
+        color:#bfc8d3!important;
+
+        font-size:21px!important;
+        line-height:25px!important;
+
+        cursor:pointer!important;
+        padding:0!important;
+    }
+
+
+    #dp-close:hover{
+        background:#394653!important;
+        color:#fff!important;
+    }
+
+
+    /* =====================================================
+       LABELS
+       ===================================================== */
+
+    #dp-label-processor,
+    #dp-label-name,
+    #dp-label-state,
+    #dp-label-mismatch,
+    #dp-label-email,
+    #dp-label-arbit-notes,
+    #dp-label-plan-evidence,
+    #dp-label-verified,
+    #dp-label-non-bifurcated{
+
+        font-size:10px!important;
+        line-height:13px!important;
+        font-weight:600!important;
+
+        color:#d5dce5!important;
+
+        margin:7px 0 3px!important;
+    }
+
+
+    #dp-label-processor{
+        margin-top:0!important;
+    }
+
+
+    /* =====================================================
+       ROWS
+       ===================================================== */
+
+    #dp-processor-row,
+    #dp-name-row,
+    #dp-state-row{
+
+        display:flex!important;
+        gap:5px!important;
+
+        width:100%!important;
+        align-items:center!important;
+    }
+
+
+    /* =====================================================
+       INPUTS / SELECTS
+       ===================================================== */
+
+    #dp-processor,
+    #dp-name,
+    #dp-state,
+    #dp-email,
+    #dp-arbit-notes,
+    #dp-mismatch,
+    #dp-plan-evidence,
+    #dp-verified,
+    #dp-non-bifurcated,
+    #dp-duplicate-comments{
+
+        height:29px!important;
+        min-height:29px!important;
+
+        box-sizing:border-box!important;
+
+        border:1px solid #536171!important;
+        border-radius:2px!important;
+
+        background:#111a24!important;
+        color:#fff!important;
+
+        outline:none!important;
+
+        padding:0 7px!important;
+
+        font-family:Arial,sans-serif!important;
+        font-size:11px!important;
+    }
+
+
+    #dp-processor,
+    #dp-name,
+    #dp-state{
+        flex:1!important;
+        min-width:0!important;
+    }
+
+
+    #dp-duplicate-comments{
+        width:145px!important;
+        flex-shrink:0!important;
+        cursor:pointer!important;
+    }
+
+
+    #dp-mismatch,
+    #dp-email,
+    #dp-arbit-notes,
+    #dp-plan-evidence,
+    #dp-verified,
+    #dp-non-bifurcated{
+        width:100%!important;
+    }
+
+
+    #dp-mismatch,
+    #dp-plan-evidence,
+    #dp-verified,
+    #dp-non-bifurcated{
+        cursor:pointer!important;
+    }
+
+
+    #dp-mismatch option,
+    #dp-plan-evidence option,
+    #dp-verified option,
+    #dp-non-bifurcated option,
+    #dp-duplicate-comments option{
+
+        background:#202a36!important;
+        color:#fff!important;
+    }
+
+
+    #dp-processor::placeholder,
+    #dp-name::placeholder,
+    #dp-state::placeholder,
+    #dp-email::placeholder,
+    #dp-arbit-notes::placeholder{
+
+        color:#7f8b99!important;
+    }
+
+
+    #dp-processor:focus,
+    #dp-name:focus,
+    #dp-state:focus,
+    #dp-email:focus,
+    #dp-arbit-notes:focus,
+    #dp-mismatch:focus,
+    #dp-plan-evidence:focus,
+    #dp-verified:focus,
+    #dp-non-bifurcated:focus,
+    #dp-duplicate-comments:focus{
+
+        border-color:#7193b7!important;
+
+        box-shadow:
+            0 0 0 1px
+            rgba(113,147,183,.25)!important;
+    }
+
+
+    /* =====================================================
+       SMALL BUTTONS
+       ===================================================== */
+
+    #dp-edit,
+    #dp-save{
+
+        height:29px!important;
+
+        padding:0 9px!important;
+
+        border:1px solid #596878!important;
+        border-radius:2px!important;
+
+        background:#303c4a!important;
+        color:#fff!important;
+
+        font-size:10px!important;
+        font-weight:700!important;
+
+        cursor:pointer!important;
+        white-space:nowrap!important;
+    }
+
+
+    #dp-edit:hover,
+    #dp-save:hover{
+        background:#3d4b5b!important;
+    }
+
+
+    #dp-go{
+
+        width:100%!important;
+        height:31px!important;
+
+        margin-top:7px!important;
+
+        border:1px solid #3f8b61!important;
+        border-radius:2px!important;
+
+        background:#276b48!important;
+        color:#fff!important;
+
+        font-size:11px!important;
+        font-weight:700!important;
+
+        cursor:pointer!important;
+    }
+
+
+    #dp-go:hover{
+        background:#318158!important;
+    }
+
+
+    #dp-save{
+        display:none;
+    }
+
+
+    #dp-saved{
+
+        display:none;
+
+        height:29px!important;
+
+        padding:0 8px!important;
+
+        border-radius:2px!important;
+
+        background:#286744!important;
+        color:#dff7e8!important;
+
+        font-weight:700!important;
+        font-size:10px!important;
+
+        align-items:center!important;
+        justify-content:center!important;
+
+        white-space:nowrap!important;
+    }
+
+
+    /* =====================================================
+       STATUS
+       ===================================================== */
+
+    #dp-status{
+
+        margin-top:5px!important;
+
+        min-height:13px!important;
+
+        font-size:9px!important;
+        line-height:12px!important;
+
+        color:#9ca8b6!important;
+    }
+
+
+    /* =====================================================
+       ELIGIBILITY
+       ===================================================== */
+
+    #dp-eligible{
+
+        margin-top:8px!important;
+        padding-top:8px!important;
+
+        border-top:
+            1px solid
+            #46515e!important;
+    }
+
+
+    #dp-eligible-title{
+
+        font-size:10px!important;
+        line-height:13px!important;
+
+        font-weight:600!important;
+
+        margin-bottom:5px!important;
+
+        color:#d5dce5!important;
+    }
+
+
+    #dp-eligible-buttons{
+
+        display:flex!important;
+        gap:5px!important;
+    }
+
+
+    #dp-no,
+    #dp-yes{
+
+        flex:1!important;
+
+        height:30px!important;
+
+        border-radius:2px!important;
+
+        border:
+            1px solid
+            #566473!important;
+
+        color:#fff!important;
+
+        font-size:10px!important;
+        font-weight:700!important;
+
+        cursor:pointer!important;
+    }
+
+
+    #dp-no{
+        background:#713536!important;
+    }
+
+
+    #dp-no:hover{
+        background:#89403f!important;
+    }
+
+
+    #dp-yes{
+        background:#285e9c!important;
+    }
+
+
+    #dp-yes:hover{
+        background:#3274bb!important;
+    }
+
+
+    /* =====================================================
+       YES EXTRA
+       ===================================================== */
+
+    #dp-yes-extra{
+
+        margin-top:8px!important;
+        padding-top:8px!important;
+
+        border-top:
+            1px solid
+            #46515e!important;
+    }
+
+
+    #dp-continue{
+
+        width:100%!important;
+        height:30px!important;
+
+        margin-top:7px!important;
+
+        border-radius:2px!important;
+
+        border:
+            1px solid
+            #3f8b61!important;
+
+        background:#276b48!important;
+
+        color:#fff!important;
+
+        font-size:10px!important;
+        font-weight:700!important;
+
+        cursor:pointer!important;
+    }
+
+
+    #dp-continue:hover:not(:disabled){
+        background:#318158!important;
+    }
+
+
+    #dp-continue:disabled{
+
+        background:#3b4249!important;
+
+        border-color:#4b535c!important;
+
+        color:#818991!important;
+
+        cursor:not-allowed!important;
+
+        opacity:.7!important;
+    }
+
+
+    /* =====================================================
+       SCROLLBAR
+       ===================================================== */
+
+    #dispute-popup::-webkit-scrollbar{
+        width:7px!important;
+    }
+
+
+    #dispute-popup::-webkit-scrollbar-track{
+        background:#18212b!important;
+    }
+
+
+    #dispute-popup::-webkit-scrollbar-thumb{
+        background:#566271!important;
+        border-radius:2px!important;
+    }
+
+
+    #dispute-popup::-webkit-scrollbar-thumb:hover{
+        background:#687789!important;
+    }
+
+
+    /* =====================================================
+       SMALL SCREENS
+       ===================================================== */
+
+    @media(max-width:650px){
+
+        #dispute-popup{
+
+            right:8px!important;
+            bottom:8px!important;
+
+            width:
+                calc(100vw - 16px)!important;
+
+            max-height:
+                calc(100vh - 16px)!important;
+        }
+
+
+        #dp-title{
+            font-size:13px!important;
+        }
+
+
+        #dp-state-row{
+            flex-wrap:wrap!important;
+        }
+
+
+        #dp-state{
+            width:100%!important;
+            flex:none!important;
+        }
+
+
+        #dp-duplicate-comments{
+            width:100%!important;
+        }
+    }
+
+`;
+
+
+document.head.appendChild(
+    style
+);
+
+
+document.body.appendChild(
+    overlay
+);
+
+
+/* =====================================================
+   ELEMENTS
+   ===================================================== */
+
+const processorInput=
+    document.getElementById(
+        "dp-processor"
+    );
+
+const nameInput=
+    document.getElementById("dp-name");
+
+const stateInput=
+    document.getElementById("dp-state");
+
+const duplicateCommentsInput=
+    document.getElementById(
+        "dp-duplicate-comments"
+    );
+
+const mismatchInput=
+    document.getElementById(
+        "dp-mismatch"
+    );
+
+const editBtn=
+    document.getElementById("dp-edit");
+
+const saveBtn=
+    document.getElementById("dp-save");
+
+const savedLabel=
+    document.getElementById("dp-saved");
+
+const goBtn=
+    document.getElementById("dp-go");
+
+const closeBtn=
+    document.getElementById("dp-close");
+
+const status=
+    document.getElementById("dp-status");
+
+const eligible=
+    document.getElementById("dp-eligible");
+
+const noBtn=
+    document.getElementById("dp-no");
+
+const yesBtn=
+    document.getElementById("dp-yes");
+
+const yesExtra=
+    document.getElementById("dp-yes-extra");
+
+const emailInput=
+    document.getElementById("dp-email");
+
+const arbitNotesInput=
+    document.getElementById(
+        "dp-arbit-notes"
+    );
+
+const planEvidenceInput=
+    document.getElementById(
+        "dp-plan-evidence"
+    );
+
+const verifiedInput=
+    document.getElementById(
+        "dp-verified"
+    );
+
+const nonBifurcatedInput=
+    document.getElementById(
+        "dp-non-bifurcated"
+    );
+
+const continueBtn=
+    document.getElementById(
+        "dp-continue"
+    );
+
+const arbitIdBtn=
+    document.getElementById(
+        "dp-arbit-id"
+    );
+
+
+/* =====================================================
+   ARBIT ID BUTTON
+   ===================================================== */
+
+arbitIdBtn.onclick=()=>{
+
+    openArbitIframe();
+
+};
+
+
+/* =====================================================
+   USER NAME + PROCESSOR NAME
+   ===================================================== */
+
+let currentName=
+    getName();
+
+let currentProcessorName=
+    getProcessorName();
+
+
+processorInput.value=
+    currentProcessorName;
+
+nameInput.value=
+    currentName;
+
+
+/* =====================================================
+   INITIAL LOCK STATE
+   ===================================================== */
+
+if(
+    currentName &&
+    currentProcessorName
+){
+
+    processorInput.readOnly=true;
+    nameInput.readOnly=true;
+
+    editBtn.style.display=
+        "inline-block";
+
+    saveBtn.style.display=
+        "none";
+
+    savedLabel.style.display=
+        "inline-flex";
+
+    status.textContent=
+        "Saved Processor Name and Dispute User Name.";
+
+}else{
+
+    processorInput.readOnly=false;
+    nameInput.readOnly=false;
+
+    editBtn.style.display=
+        "none";
+
+    saveBtn.style.display=
+        "inline-block";
+
+    savedLabel.style.display=
+        "none";
+
+
+    if(!currentProcessorName){
+
+        status.textContent=
+            "Please enter and save your Processor Name and Dispute User Name.";
+
+        processorInput.focus();
+
+    }else{
+
+        status.textContent=
+            "Please enter and save your Dispute User Name.";
+
+        nameInput.focus();
+
+    }
+
+}
+
+
+/* =====================================================
+   EDIT
+   ===================================================== */
+
+editBtn.onclick=()=>{
+
+    processorInput.readOnly=false;
+    nameInput.readOnly=false;
+
+    processorInput.focus();
+
+    processorInput.select();
+
+    editBtn.style.display=
+        "none";
+
+    saveBtn.style.display=
+        "inline-block";
+
+    savedLabel.style.display=
+        "none";
+
+    status.textContent=
+        "Editing Processor Name and Dispute User Name...";
+
+};
+
+
+/* =====================================================
+   SAVE
+   ===================================================== */
+
+saveBtn.onclick=()=>{
+
+    const processor=
+        processorInput.value.trim();
+
+    const n=
+        nameInput.value.trim();
+
+
+    if(!processor){
+
+        status.textContent=
+            "Enter a Processor Name first.";
+
+        processorInput.focus();
+
+        return;
+
+    }
+
+
+    if(!n){
+
+        status.textContent=
+            "Enter a Dispute User Name first.";
+
+        nameInput.focus();
+
+        return;
+
+    }
+
+
+    if(!saveProcessorName(processor)){
+
+        status.textContent=
+            "Could not save the Processor Name.";
+
+        return;
+
+    }
+
+
+    if(!saveName(n)){
+
+        status.textContent=
+            "Could not save the username.";
+
+        return;
+
+    }
+
+
+    currentProcessorName=
+        processor;
+
+    currentName=
+        n;
+
+
+    processorInput.value=
+        processor;
+
+    nameInput.value=
+        n;
+
+
+    processorInput.readOnly=true;
+    nameInput.readOnly=true;
+
+    editBtn.style.display=
+        "inline-block";
+
+    saveBtn.style.display=
+        "none";
+
+    savedLabel.style.display=
+        "inline-flex";
+
+    status.textContent=
+        "Processor Name and Dispute User Name saved.";
+
+    stateInput.focus();
+
+};
+
+
+/* =====================================================
+   VALIDATE MAIN FORM
+   ===================================================== */
+
+const validate=()=>{
+
+    if(!currentProcessorName){
+
+        status.textContent=
+            "Please save your Processor Name first.";
+
+        processorInput.focus();
+
+        return false;
+
+    }
+
+
+    if(!currentName){
+
+        status.textContent=
+            "Please save your Dispute User Name first.";
+
+        nameInput.focus();
+
+        return false;
+
+    }
+
+
+    if(!stateInput.value.trim()){
+
+        status.textContent=
+            "Enter a State.";
+
+        stateInput.focus();
+
+        return false;
+
+    }
+
+
+    if(!duplicateCommentsInput.value){
+
+        status.textContent=
+            "Please select Duplicate Dispute Comments.";
+
+        duplicateCommentsInput.focus();
+
+        return false;
+
+    }
+
+
+    if(!mismatchInput.value){
+
+        status.textContent=
+            "Please select Plantype Mismatch: Yes or No.";
+
+        mismatchInput.focus();
+
+        return false;
+
+    }
+
+
+    return true;
+
+};
+
+
+/* =====================================================
+   VALIDATE YES FORM
+   ===================================================== */
+
+const validateYesFields=()=>{
+
+    const email=
+        emailInput.value.trim();
+
+    const arbitNotes=
+        arbitNotesInput.value.trim();
+
+    const planEvidence=
+        planEvidenceInput.value;
+
+    const verificationStatus=
+        verifiedInput.value;
+
+    const nonBifurcated=
+        nonBifurcatedInput.value;
+
+
+    return(
+        !!email &&
+        !!arbitNotes &&
+        !!planEvidence &&
+        !!verificationStatus &&
+        !!nonBifurcated
+    );
+
+};
+
+
+/* =====================================================
+   UPDATE CONTINUE
+   ===================================================== */
+
+const updateContinueButton=()=>{
+
+    const complete=
+        validateYesFields();
+
+
+    continueBtn.disabled=
+        !complete;
+
+
+    if(complete){
+
+        continueBtn.title=
+            "All required fields are complete.";
+
+    }else{
+
+        continueBtn.title=
+            "Complete all required fields before continuing.";
+
+    }
+
+};
+
+
+/* =====================================================
+   YES FIELD LISTENERS
+   ===================================================== */
+
+emailInput.addEventListener(
+    "input",
+    updateContinueButton
+);
+
+arbitNotesInput.addEventListener(
+    "input",
+    updateContinueButton
+);
+
+planEvidenceInput.addEventListener(
+    "change",
+    updateContinueButton
+);
+
+verifiedInput.addEventListener(
+    "change",
+    updateContinueButton
+);
+
+nonBifurcatedInput.addEventListener(
+    "change",
+    updateContinueButton
+);
+
+
+/* =====================================================
+   GO
+   ===================================================== */
+
+const processGo=()=>{
+
+    if(!validate())
+        return;
+
+
+    stateInput.value=
+        stateInput.value
+            .trim()
+            .toUpperCase();
+
+
+    eligible.style.display=
+        "block";
+
+
+    yesExtra.style.display=
+        "none";
+
+
+    emailInput.value="";
+    arbitNotesInput.value="";
+    planEvidenceInput.value="";
+    verifiedInput.value="";
+    nonBifurcatedInput.value="";
+
+
+    updateContinueButton();
+
+
+    status.textContent=
+        "Choose eligibility to continue.";
+
+    noBtn.focus();
+
+};
+
+
+goBtn.onclick=
+    processGo;
+
+
+stateInput.onkeydown=e=>{
+
+    if(e.key==="Enter"){
+
+        e.preventDefault();
+
+        processGo();
+
+    }
+
+};
+
+
+/* =========================================================
+   BUILD ONE ROW
+   ========================================================= */
+
+const buildRow=(
+    id,
+    i,
+    stateValue,
+    duplicateComments,
+    isYes,
+    disputeUserName="",
+    email="",
+    verificationStatus="",
+    arbitCaseNotes="",
+    planTypeEvidence="",
+    nonBifurcated="",
+    plantypeMismatch="",
+    processorName=""
+)=>{
+
+    const actualG=
+        disputeStatus;
+
+
+    const actualL=
+        columnJValue;
+
+
+    const actualR=
+        getColumnRValue(
+            actualG,
+            actualL
+        );
+
+
+    /*
+     * A:R remain exactly as before.
+     *
+     * S = Processor Name
+     * T = Philippine Date
+     */
+
+    const row=[
+
+        isYes
+            ?email
+            :"-",
+
+        getPlanType(i),
+
+        plantypeMismatch,
+
+        duplicateComments,
+
+        disputeNumber,
+
+        id,
+
+        actualG,
+
+        isYes
+            ?disputeUserName
+            :"-",
+
+        isYes
+            ?verificationStatus
+            :"-",
+
+        isYes
+            ?arbitCaseNotes
+            :"-",
+
+        isYes
+            ?planTypeEvidence
+            :"-",
+
+        actualL,
+
+        "N/A",
+
+        "N/A",
+
+        stateValue,
+
+        isYes
+            ?nonBifurcated
+            :"-",
+
+        isYes
+            ?"Yes"
+            :"No",
+
+        actualR,
+
+        processorName,
+
+        getPHDate()
+
+    ];
+
+
+    if(row.length!==20){
+
+        console.error(
+            "ERROR: ROW DOES NOT HAVE 20 COLUMNS!",
+            row,
+            "Length:",
+            row.length
+        );
+
+    }
+
+
+    console.log(
+        "FINAL 20-COLUMN ROW",
+        row
+    );
+
+
+    console.log(
+        "COLUMN S / PROCESSOR NAME:",
+        processorName
+    );
+
+    console.log(
+        "COLUMN T / PHILIPPINE DATE:",
+        getPHDate()
+    );
+
+
+    return row.join("\t");
+
+};
+
+
+/* =========================================================
+   BUILD OUTPUT
+   ========================================================= */
+
+const buildOutput=(
+    stateValue,
+    duplicateComments,
+    isYes,
+    disputeUserName="",
+    email="",
+    verificationStatus="",
+    arbitCaseNotes="",
+    planTypeEvidence="",
+    nonBifurcated="",
+    plantypeMismatch="",
+    processorName=""
+)=>{
+
+    const rows=
+        sameId
+        ?[
+            buildRow(
+                ids[0],
+                0,
+                stateValue,
+                duplicateComments,
+                isYes,
+                disputeUserName,
+                email,
+                verificationStatus,
+                arbitCaseNotes,
+                planTypeEvidence,
+                nonBifurcated,
+                plantypeMismatch,
+                processorName
+            )
+        ]
+        :ids.map((id,i)=>
+            buildRow(
+                id,
+                i,
+                stateValue,
+                duplicateComments,
+                isYes,
+                disputeUserName,
+                email,
+                verificationStatus,
+                arbitCaseNotes,
+                planTypeEvidence,
+                nonBifurcated,
+                plantypeMismatch,
+                processorName
+            )
+        );
+
+
+    const output=
+        rows.join("\r\n");
+
+
+    console.log(
+        "FINAL COPY OUTPUT",
+        output
+    );
+
+
+    return output;
+
+};
+
+
+/* =========================================================
+   NO
+   ========================================================= */
+
+noBtn.onclick=async()=>{
+
+    if(!validate())
+        return;
+
+
+    const stateValue=
+        stateInput.value
+            .trim()
+            .toUpperCase();
+
+
+    const duplicateComments=
+        duplicateCommentsInput.value;
+
+
+    const plantypeMismatch=
+        mismatchInput.value;
+
+
+    const output=
+        buildOutput(
+            stateValue,
+            duplicateComments,
+            false,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            plantypeMismatch,
+            currentProcessorName
+        );
+
+
+    const copied=
+        await copyText(output);
+
+
+    overlay.remove();
+    style.remove();
+
+
+    const rowCount=
+        sameId
+        ?1
+        :ids.length;
+
+
+    showCopyMessage(
+
+        copied
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
+        :`❌ COPY FAILED — CLICK COPY AGAIN`,
+
+        output
+
+    );
+
+
+    resolve(null);
+
+};
+
+
+/* =========================================================
+   YES
+   ========================================================= */
+
+yesBtn.onclick=()=>{
+
+    if(!validate())
+        return;
+
+
+    yesExtra.style.display=
+        "block";
+
+
+    status.textContent=
+        "Complete all required YES fields.";
+
+
+    updateContinueButton();
+
+
+    emailInput.focus();
+
+};
+
+
+/* =========================================================
+   CONTINUE YES
+   ========================================================= */
+
+continueBtn.onclick=async()=>{
+
+    if(continueBtn.disabled){
+
+        status.textContent=
+            "Please complete all required fields before continuing.";
+
+        return;
+
+    }
+
+
+    if(!validate())
+        return;
+
+
+    if(!validateYesFields()){
+
+        status.textContent=
+            "Please complete all required YES fields.";
+
+        updateContinueButton();
+
+        return;
+
+    }
+
+
+    const email=
+        emailInput.value.trim();
+
+
+    const arbitCaseNotes=
+        arbitNotesInput.value.trim();
+
+
+    const planTypeEvidence=
+        planEvidenceInput.value;
+
+
+    const verificationStatus=
+        verifiedInput.value;
+
+
+    const nonBifurcated=
+        nonBifurcatedInput.value;
+
+
+    const plantypeMismatch=
+        mismatchInput.value;
+
+
+    if(!email){
+
+        status.textContent=
+            "Enter PLANTYPE_IDRE_EMAIL.";
+
+        emailInput.focus();
+
+        return;
+
+    }
+
+
+    if(!arbitCaseNotes){
+
+        status.textContent=
+            "Enter Arbit Case Notes.";
+
+        arbitNotesInput.focus();
+
+        return;
+
+    }
+
+
+    if(!planTypeEvidence){
+
+        status.textContent=
+            "Select Plan Type Evidence.";
+
+        planEvidenceInput.focus();
+
+        return;
+
+    }
+
+
+    if(!verificationStatus){
+
+        status.textContent=
+            "Select Yes or No for Verified.";
+
+        verifiedInput.focus();
+
+        return;
+
+    }
+
+
+    if(!nonBifurcated){
+
+        status.textContent=
+            "Select N/A or Yes for Non-Bifurcated state/Federal.";
+
+        nonBifurcatedInput.focus();
+
+        return;
+
+    }
+
+
+    if(!plantypeMismatch){
+
+        status.textContent=
+            "Select Yes or No for Plantype Mismatch.";
+
+        mismatchInput.focus();
+
+        return;
+
+    }
+
+
+    const stateValue=
+        stateInput.value
+            .trim()
+            .toUpperCase();
+
+
+    const duplicateComments=
+        duplicateCommentsInput.value;
+
+
+    const output=
+        buildOutput(
+            stateValue,
+            duplicateComments,
+            true,
+            currentName,
+            email,
+            verificationStatus,
+            arbitCaseNotes,
+            planTypeEvidence,
+            nonBifurcated,
+            plantypeMismatch,
+            currentProcessorName
+        );
+
+
+    const copied=
+        await copyText(output);
+
+
+    overlay.remove();
+    style.remove();
+
+
+    const rowCount=
+        sameId
+        ?1
+        :ids.length;
+
+
+    showCopyMessage(
+
+        copied
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
+        :`❌ COPY FAILED — CLICK COPY AGAIN`,
+
+        output
+
+    );
+
+
+    resolve(null);
+
+};
+
+
+/* =========================================================
+   KEYBOARD SHORTCUTS
+   ========================================================= */
+
+overlay.addEventListener(
+    "keydown",
+    e=>{
+
+        if(
+            e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.shiftKey &&
+            e.key==="2"
+        ){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            duplicateCommentsInput.value=
+                "N/A";
+
+
+            duplicateCommentsInput.dispatchEvent(
+                new Event(
+                    "change",
+                    {
+                        bubbles:true
+                    }
+                )
+            );
+
+
+            status.textContent=
+                "Duplicate Dispute Comments: N/A";
+
+            return;
+
+        }
+
+
+        if(
+            e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.shiftKey &&
+            e.key==="3"
+        ){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            duplicateCommentsInput.value=
+                "Duplicate Dispute Reviewed";
+
+
+            duplicateCommentsInput.dispatchEvent(
+                new Event(
+                    "change",
+                    {
+                        bubbles:true
+                    }
+                )
+            );
+
+
+            status.textContent=
+                "Duplicate Dispute Comments: Duplicate Dispute Reviewed";
+
+            return;
+
+        }
+
+
+        if(
+            e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.shiftKey &&
+            e.key==="4"
+        ){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            mismatchInput.value=
+                "No";
+
+
+            mismatchInput.dispatchEvent(
+                new Event(
+                    "change",
+                    {
+                        bubbles:true
+                    }
+                )
+            );
+
+
+            status.textContent=
+                "Plantype Mismatch: No";
+
+            return;
+
+        }
+
+
+        if(
+            e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.shiftKey &&
+            e.key==="5"
+        ){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            mismatchInput.value=
+                "Yes";
+
+
+            mismatchInput.dispatchEvent(
+                new Event(
+                    "change",
+                    {
+                        bubbles:true
+                    }
+                )
+            );
+
+
+            status.textContent=
+                "Plantype Mismatch: Yes";
+
+            return;
+
+        }
+
+
+        if(e.key==="Escape"){
+
+            e.preventDefault();
+
+            overlay.remove();
+            style.remove();
+
+            resolve(null);
+
+            return;
+
+        }
+
+
+        if(
+            e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.shiftKey &&
+            e.key==="0" &&
+            eligible.style.display==="block"
+        ){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            noBtn.click();
+
+            return;
+
+        }
+
+
+        if(
+            e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.shiftKey &&
+            e.key==="1" &&
+            eligible.style.display==="block"
+        ){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            yesBtn.click();
+
+            return;
+
+        }
+
+    },
+    true
+);
+
+
+/* =========================================================
+   CLOSE
+   ========================================================= */
+
+closeBtn.onclick=()=>{
+
+    overlay.remove();
+    style.remove();
+
+    resolve(null);
+
+};
+
+
+stateInput.focus();
+
+});
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+await popup();
+
+})();
