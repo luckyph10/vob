@@ -198,11 +198,6 @@ const arbitIdLinks=[
     )
 ];
 
-
-/* =========================================================
-   GET IDS
-   ========================================================= */
-
 const ids=[
     ...arbitIdLinks
 ]
@@ -445,7 +440,6 @@ const getColumnRValue=(actualG,actualL)=>{
     const g=normalizeValue(actualG);
     const l=normalizeValue(actualL);
 
-
     console.log(
         "========================================"
     );
@@ -475,10 +469,6 @@ const getColumnRValue=(actualG,actualL)=>{
     );
 
 
-    /* =====================================================
-       COLUMN L = CLOSED
-       ===================================================== */
-
     if(
         l==="closed"||
         l.includes("closed")
@@ -494,10 +484,6 @@ const getColumnRValue=(actualG,actualL)=>{
 
     }
 
-
-    /* =====================================================
-       COLUMN G = PLAN TYPE VALIDATED
-       ===================================================== */
 
     if(
         g.includes(
@@ -516,10 +502,6 @@ const getColumnRValue=(actualG,actualL)=>{
     }
 
 
-    /* =====================================================
-       COLUMN G = PLAN TYPE OBJECTION SUBMITTED
-       ===================================================== */
-
     if(
         g.includes(
             "plan type objection submitted"
@@ -536,10 +518,6 @@ const getColumnRValue=(actualG,actualL)=>{
 
     }
 
-
-    /* =====================================================
-       COLUMN G = TIMELINE ENFORCEMENT SUBMITTED TO IDRE
-       ===================================================== */
 
     if(
         g.includes(
@@ -558,11 +536,6 @@ const getColumnRValue=(actualG,actualL)=>{
     }
 
 
-    /* =====================================================
-       COLUMN G = ADDITIONAL INFO PROVIDED TO IDRE
-       THROUGH EMAIL
-       ===================================================== */
-
     if(
         g.includes(
             "additional info provided to idre through email"
@@ -580,11 +553,6 @@ const getColumnRValue=(actualG,actualL)=>{
     }
 
 
-    /* =====================================================
-       COLUMN G = ADDITIONAL INFO PROVIDED TO IDRE
-       THROUGH PORTAL
-       ===================================================== */
-
     if(
         g.includes(
             "additional info provided to idre through portal"
@@ -601,10 +569,6 @@ const getColumnRValue=(actualG,actualL)=>{
 
     }
 
-
-    /* =====================================================
-       NO MATCH
-       ===================================================== */
 
     console.warn(
         "NO G/L -> R RULE MATCHED",
@@ -728,7 +692,7 @@ const showCopyMessage=(message,clipboardText)=>{
 
 
     toast.style.cssText=
-        "position:fixed;top:80px;left:50%;transform:translateX(-50%);padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;font:600 14px Arial,sans-serif;z-index:2147483647;box-shadow:0 8px 32px rgba(0,0,0,.4);min-width:360px;text-align:center;box-sizing:border-box";
+    "position:fixed;right:12px;bottom:12px;left:auto;top:auto;transform:none;padding:10px 12px;border-radius:3px;background:#202a36;border:1px solid #465363;color:#fff;font:600 11px Arial,sans-serif;z-index:2147483647;box-shadow:0 4px 14px rgba(0,0,0,.45);width:390px;max-width:calc(100vw - 24px);text-align:left;box-sizing:border-box";
 
 
     const messageEl=
@@ -748,7 +712,7 @@ const showCopyMessage=(message,clipboardText)=>{
 
 
     copyAgainBtn.style.cssText=
-        "margin-top:10px;height:36px;padding:0 16px;border:1px solid rgba(255,255,255,.25);border-radius:9px;background:rgba(35,150,70,.9);color:#fff;font:700 13px Arial,sans-serif;cursor:pointer";
+    "margin-top:7px;height:28px;padding:0 11px;border:1px solid #536171;border-radius:2px;background:#303c4a;color:#fff;font:700 10px Arial,sans-serif;cursor:pointer";
 
 
     copyAgainBtn.onclick=async()=>{
@@ -2219,8 +2183,7 @@ const openArbitIframe=()=>{
 
         overlay.style.setProperty(
             "isolation",
-            "isolate",
-            "important"
+            "isolate"
         );
 
     }catch(e){
@@ -2374,6 +2337,67 @@ const popup=()=>new Promise(resolve=>{
 
     if(old)
         old.remove();
+
+
+    /*
+     * =====================================================
+     * FIND THE SIDEBAR
+     * =====================================================
+     *
+     * The popup will now live INSIDE .sb-nav.
+     */
+
+    const sidebar=
+        document.querySelector(
+            "nav.sb-nav"
+        );
+
+
+    /*
+     * Fallback in case the nav is not found.
+     * This keeps the script functional instead of failing.
+     */
+
+    const popupContainer=
+        sidebar||
+        document.body;
+
+
+    if(!sidebar){
+
+        console.warn(
+            "nav.sb-nav not found. Popup will use document.body."
+        );
+
+    }
+
+
+    /*
+     * Make the sidebar the positioning reference.
+     */
+
+    if(sidebar){
+
+        const computed=
+            window.getComputedStyle(
+                sidebar
+            );
+
+
+        if(
+            computed.position===
+            "static"
+        ){
+
+            sidebar.style.setProperty(
+                "position",
+                "relative",
+                "important"
+            );
+
+        }
+
+    }
 
 
     const overlay=
@@ -2715,98 +2739,210 @@ style.id=
 
 style.textContent=`
 
+    /* =====================================================
+       SIDEBAR POPUP
+       ===================================================== */
+
+    /*
+     * The overlay is now INSIDE nav.sb-nav.
+     *
+     * It does not cover the page.
+     * It simply provides the positioning layer.
+     */
+
     #dispute-popup-overlay{
-        position:fixed;
-        inset:0;
-        width:100%;
-        height:100%;
-        z-index:2147483646;
-        pointer-events:none;
-        isolation:isolate;
+
+        position:absolute!important;
+
+        left:0!important;
+        right:0!important;
+        top:0!important;
+        bottom:0!important;
+
+        width:100%!important;
+        height:100%!important;
+
+        z-index:2147483646!important;
+
+        pointer-events:none!important;
+
+        isolation:isolate!important;
+
+        box-sizing:border-box!important;
     }
 
+
+    /*
+     * Main popup:
+     *
+     * LEFT + BOTTOM of the sidebar.
+     */
 
     #dispute-popup{
-        pointer-events:auto;
-        position:absolute;
-        top:20px;
-        left:50%;
-        transform:translateX(-50%);
-        width:620px;
-        max-width:calc(100vw - 30px);
-        max-height:calc(100vh - 40px);
-        overflow-y:auto;
-        padding:24px;
-        border-radius:18px;
-        background:rgba(0,0,0,.78);
-        border:1px solid rgba(255,255,255,.18);
-        box-shadow:0 15px 45px rgba(0,0,0,.45);
-        backdrop-filter:blur(14px);
-        -webkit-backdrop-filter:blur(14px);
-        font-family:Arial,sans-serif;
-        color:#fff;
-        box-sizing:border-box;
+
+        pointer-events:auto!important;
+
+        position:absolute!important;
+
+        left:12px!important;
+        bottom:12px!important;
+
+        right:auto!important;
+        top:auto!important;
+
+        width:390px!important;
+
+        max-width:
+            calc(100% - 24px)!important;
+
+        max-height:
+            calc(100% - 24px)!important;
+
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+
+        padding:14px!important;
+
+        border-radius:4px!important;
+
+        background:#202a36!important;
+
+        border:
+            1px solid
+            #465363!important;
+
+        box-shadow:
+            0 4px 14px
+            rgba(0,0,0,.45)!important;
+
+        backdrop-filter:none!important;
+        -webkit-backdrop-filter:none!important;
+
+        font-family:
+            Arial,
+            sans-serif!important;
+
+        color:#fff!important;
+
+        box-sizing:border-box!important;
     }
 
 
+    /* =====================================================
+       HEADER
+       ===================================================== */
+
     #dp-title-row{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        margin-bottom:20px;
-        padding-right:34px;
+
+        display:flex!important;
+
+        align-items:center!important;
+
+        justify-content:space-between!important;
+
+        gap:8px!important;
+
+        margin-bottom:10px!important;
+
+        padding-right:30px!important;
+
+        min-height:30px!important;
     }
 
 
     #dp-title{
-        font-size:20px;
-        font-weight:700;
-        margin:0;
+
+        font-size:14px!important;
+
+        line-height:18px!important;
+
+        font-weight:700!important;
+
+        color:#fff!important;
+
+        margin:0!important;
     }
 
 
     #dp-arbit-id{
-        height:38px;
-        padding:0 16px;
-        border:1px solid rgba(255,255,255,.25);
-        border-radius:9px;
-        background:#d92828;
-        color:#fff;
-        font-size:13px;
-        font-weight:800;
-        letter-spacing:.4px;
-        cursor:pointer;
-        white-space:nowrap;
-        box-shadow:0 4px 12px rgba(0,0,0,.3);
+
+        height:29px!important;
+
+        padding:0 9px!important;
+
+        border:
+            1px solid
+            #657386!important;
+
+        border-radius:3px!important;
+
+        background:#303c4a!important;
+
+        color:#fff!important;
+
+        font-size:10px!important;
+
+        font-weight:700!important;
+
+        letter-spacing:.2px!important;
+
+        cursor:pointer!important;
+
+        white-space:nowrap!important;
+
+        box-shadow:none!important;
     }
 
 
     #dp-arbit-id:hover{
-        background:#ef3333;
-        transform:translateY(-1px);
+
+        background:#3c4b5d!important;
+
+        transform:none!important;
     }
 
 
     #dp-close{
-        position:absolute;
-        top:8px;
-        right:10px;
-        width:34px;
-        height:34px;
-        border:0;
-        border-radius:50%;
-        background:transparent;
-        color:#fff;
-        font-size:27px;
-        cursor:pointer;
+
+        position:absolute!important;
+
+        top:5px!important;
+
+        right:6px!important;
+
+        width:25px!important;
+
+        height:25px!important;
+
+        border:0!important;
+
+        border-radius:3px!important;
+
+        background:transparent!important;
+
+        color:#bfc8d3!important;
+
+        font-size:21px!important;
+
+        line-height:25px!important;
+
+        cursor:pointer!important;
+
+        padding:0!important;
     }
 
 
     #dp-close:hover{
-        background:rgba(255,255,255,.14);
+
+        background:#394653!important;
+
+        color:#fff!important;
     }
 
+
+    /* =====================================================
+       LABELS
+       ===================================================== */
 
     #dp-label-processor,
     #dp-label-name,
@@ -2818,28 +2954,45 @@ style.textContent=`
     #dp-label-verified,
     #dp-label-non-bifurcated{
 
-        font-size:13px;
-        font-weight:600;
-        color:rgba(255,255,255,.9);
-        margin:10px 0 7px;
+        font-size:10px!important;
 
+        line-height:13px!important;
+
+        font-weight:600!important;
+
+        color:#d5dce5!important;
+
+        margin:7px 0 3px!important;
     }
 
 
     #dp-label-processor{
-        margin-top:0;
+
+        margin-top:0!important;
     }
 
+
+    /* =====================================================
+       ROWS
+       ===================================================== */
 
     #dp-processor-row,
     #dp-name-row,
     #dp-state-row{
-        display:flex;
-        gap:8px;
-        width:100%;
-        align-items:center;
+
+        display:flex!important;
+
+        gap:5px!important;
+
+        width:100%!important;
+
+        align-items:center!important;
     }
 
+
+    /* =====================================================
+       INPUTS / SELECTS
+       ===================================================== */
 
     #dp-processor,
     #dp-name,
@@ -2852,31 +3005,51 @@ style.textContent=`
     #dp-non-bifurcated,
     #dp-duplicate-comments{
 
-        height:42px;
-        box-sizing:border-box;
-        border:1px solid rgba(255,255,255,.25);
-        border-radius:10px;
-        background:rgba(255,255,255,.09);
-        color:#fff;
-        outline:none;
-        padding:0 12px;
-        font-size:14px;
+        height:29px!important;
 
+        min-height:29px!important;
+
+        box-sizing:border-box!important;
+
+        border:
+            1px solid
+            #536171!important;
+
+        border-radius:2px!important;
+
+        background:#111a24!important;
+
+        color:#fff!important;
+
+        outline:none!important;
+
+        padding:0 7px!important;
+
+        font-family:
+            Arial,
+            sans-serif!important;
+
+        font-size:11px!important;
     }
 
 
     #dp-processor,
     #dp-name,
     #dp-state{
-        flex:1;
-        min-width:0;
+
+        flex:1!important;
+
+        min-width:0!important;
     }
 
 
     #dp-duplicate-comments{
-        width:220px;
-        flex-shrink:0;
-        cursor:pointer;
+
+        width:145px!important;
+
+        flex-shrink:0!important;
+
+        cursor:pointer!important;
     }
 
 
@@ -2886,7 +3059,8 @@ style.textContent=`
     #dp-plan-evidence,
     #dp-verified,
     #dp-non-bifurcated{
-        width:100%;
+
+        width:100%!important;
     }
 
 
@@ -2894,7 +3068,8 @@ style.textContent=`
     #dp-plan-evidence,
     #dp-verified,
     #dp-non-bifurcated{
-        cursor:pointer;
+
+        cursor:pointer!important;
     }
 
 
@@ -2903,8 +3078,10 @@ style.textContent=`
     #dp-verified option,
     #dp-non-bifurcated option,
     #dp-duplicate-comments option{
-        background:#222;
-        color:#fff;
+
+        background:#202a36!important;
+
+        color:#fff!important;
     }
 
 
@@ -2913,7 +3090,8 @@ style.textContent=`
     #dp-state::placeholder,
     #dp-email::placeholder,
     #dp-arbit-notes::placeholder{
-        color:rgba(255,255,255,.5);
+
+        color:#7f8b99!important;
     }
 
 
@@ -2928,82 +3106,87 @@ style.textContent=`
     #dp-non-bifurcated:focus,
     #dp-duplicate-comments:focus{
 
-        border-color:rgba(255,255,255,.65);
+        border-color:#7193b7!important;
 
         box-shadow:
-            0 0 0 3px
-            rgba(255,255,255,.08);
-
+            0 0 0 1px
+            rgba(113,147,183,.25)!important;
     }
 
 
+    /* =====================================================
+       SMALL BUTTONS
+       ===================================================== */
+
     #dp-edit,
-    #dp-save,
-    #dp-go{
+    #dp-save{
 
-        height:42px;
+        height:29px!important;
 
-        padding:
-            0 15px;
+        padding:0 9px!important;
 
         border:
             1px solid
-            rgba(255,255,255,.25);
+            #596878!important;
 
-        border-radius:10px;
+        border-radius:2px!important;
 
-        background:
-            rgba(255,255,255,.14);
+        background:#303c4a!important;
 
-        color:#fff;
+        color:#fff!important;
 
-        font-weight:700;
+        font-size:10px!important;
 
-        font-size:14px;
+        font-weight:700!important;
 
-        cursor:pointer;
+        cursor:pointer!important;
 
-        white-space:nowrap;
-
+        white-space:nowrap!important;
     }
 
 
     #dp-edit:hover,
     #dp-save:hover{
 
-        background:
-            rgba(255,255,255,.24);
-
+        background:#3d4b5b!important;
     }
 
 
     #dp-go{
 
-        width:100%;
+        width:100%!important;
 
-        margin-top:10px;
+        height:31px!important;
 
-        background:
-            rgba(35,150,70,.9);
+        margin-top:7px!important;
 
-        border-color:
-            rgba(35,150,70,.65);
+        border:
+            1px solid
+            #3f8b61!important;
 
+        border-radius:2px!important;
+
+        background:#276b48!important;
+
+        color:#fff!important;
+
+        font-size:11px!important;
+
+        font-weight:700!important;
+
+        cursor:pointer!important;
     }
 
 
     #dp-go:hover{
 
-        background:
-            rgba(45,175,80,.98);
-
+        background:#318158!important;
     }
 
 
     #dp-save{
 
         display:none;
-
     }
 
 
@@ -3011,248 +3194,269 @@ style.textContent=`
 
         display:none;
 
-        height:42px;
+        height:29px!important;
 
-        padding:
-            0 12px;
+        padding:0 8px!important;
 
-        border-radius:10px;
+        border-radius:2px!important;
 
-        background:
-            rgba(35,140,65,.8);
+        background:#286744!important;
 
-        color:#fff;
+        color:#dff7e8!important;
 
-        font-weight:700;
+        font-weight:700!important;
 
-        font-size:13px;
+        font-size:10px!important;
 
-        align-items:center;
+        align-items:center!important;
 
-        justify-content:center;
+        justify-content:center!important;
 
-        white-space:nowrap;
-
+        white-space:nowrap!important;
     }
 
+
+    /* =====================================================
+       STATUS
+       ===================================================== */
 
     #dp-status{
 
-        margin-top:9px;
+        margin-top:5px!important;
 
-        font-size:12px;
+        min-height:13px!important;
 
-        color:
-            rgba(255,255,255,.65);
+        font-size:9px!important;
 
-        min-height:16px;
+        line-height:12px!important;
 
+        color:#9ca8b6!important;
     }
 
 
+    /* =====================================================
+       ELIGIBILITY
+       ===================================================== */
+
     #dp-eligible{
 
-        margin-top:16px;
+        margin-top:8px!important;
 
-        padding-top:14px;
+        padding-top:8px!important;
 
         border-top:
             1px solid
-            rgba(255,255,255,.14);
-
+            #46515e!important;
     }
 
 
     #dp-eligible-title{
 
-        font-size:13px;
+        font-size:10px!important;
 
-        font-weight:600;
+        line-height:13px!important;
 
-        margin-bottom:9px;
+        font-weight:600!important;
 
+        margin-bottom:5px!important;
+
+        color:#d5dce5!important;
     }
 
 
     #dp-eligible-buttons{
 
-        display:flex;
+        display:flex!important;
 
-        gap:8px;
-
+        gap:5px!important;
     }
 
 
     #dp-no,
     #dp-yes{
 
-        flex:1;
+        flex:1!important;
 
-        height:42px;
+        height:30px!important;
 
-        border-radius:10px;
+        border-radius:2px!important;
 
         border:
             1px solid
-            rgba(255,255,255,.2);
+            #566473!important;
 
-        color:#fff;
+        color:#fff!important;
 
-        font-size:14px;
+        font-size:10px!important;
 
-        font-weight:700;
+        font-weight:700!important;
 
-        cursor:pointer;
-
+        cursor:pointer!important;
     }
 
 
     #dp-no{
 
-        background:
-            rgba(190,35,35,.88);
-
+        background:#713536!important;
     }
 
 
     #dp-no:hover{
 
-        background:
-            rgba(220,45,45,.95);
-
+        background:#89403f!important;
     }
 
 
     #dp-yes{
 
-        background:
-            rgba(30,95,190,.9);
-
+        background:#285e9c!important;
     }
 
 
     #dp-yes:hover{
 
-        background:
-            rgba(40,115,220,.98);
-
+        background:#3274bb!important;
     }
 
 
+    /* =====================================================
+       YES EXTRA
+       ===================================================== */
+
     #dp-yes-extra{
 
-        margin-top:14px;
+        margin-top:8px!important;
 
-        padding-top:14px;
+        padding-top:8px!important;
 
         border-top:
             1px solid
-            rgba(255,255,255,.14);
-
+            #46515e!important;
     }
 
 
     #dp-continue{
 
-        width:100%;
+        width:100%!important;
 
-        height:42px;
+        height:30px!important;
 
-        margin-top:10px;
+        margin-top:7px!important;
 
-        border-radius:10px;
+        border-radius:2px!important;
 
         border:
             1px solid
-            rgba(35,140,65,.45);
+            #3f8b61!important;
 
-        background:
-            rgba(35,150,70,.9);
+        background:#276b48!important;
 
-        color:#fff;
+        color:#fff!important;
 
-        font-size:14px;
+        font-size:10px!important;
 
-        font-weight:700;
+        font-weight:700!important;
 
-        cursor:pointer;
-
+        cursor:pointer!important;
     }
 
 
     #dp-continue:hover:not(:disabled){
 
-        background:
-            rgba(45,175,80,.98);
-
+        background:#318158!important;
     }
 
 
     #dp-continue:disabled{
 
-        background:
-            rgba(100,100,100,.45);
+        background:#3b4249!important;
 
-        border-color:
-            rgba(255,255,255,.12);
+        border-color:#4b535c!important;
 
-        color:
-            rgba(255,255,255,.45);
+        color:#818991!important;
 
-        cursor:not-allowed;
+        cursor:not-allowed!important;
 
-        opacity:.65;
-
+        opacity:.7!important;
     }
 
 
+    /* =====================================================
+       SCROLLBAR
+       ===================================================== */
+
+    #dispute-popup::-webkit-scrollbar{
+
+        width:7px!important;
+    }
+
+
+    #dispute-popup::-webkit-scrollbar-track{
+
+        background:#18212b!important;
+    }
+
+
+    #dispute-popup::-webkit-scrollbar-thumb{
+
+        background:#566271!important;
+
+        border-radius:2px!important;
+    }
+
+
+    #dispute-popup::-webkit-scrollbar-thumb:hover{
+
+        background:#687789!important;
+    }
+
+
+    /* =====================================================
+       SMALL SIDEBARS
+       ===================================================== */
+
     @media(max-width:650px){
 
-        #dp-title-row{
+        #dispute-popup{
 
-            padding-right:34px;
+            left:8px!important;
 
+            bottom:8px!important;
+
+            width:
+                calc(100% - 16px)!important;
+
+            max-width:
+                calc(100% - 16px)!important;
+
+            max-height:
+                calc(100% - 16px)!important;
         }
 
 
         #dp-title{
 
-            font-size:18px;
-
-        }
-
-
-        #dp-arbit-id{
-
-            padding:
-                0 11px;
-
-            font-size:
-                12px;
-
+            font-size:13px!important;
         }
 
 
         #dp-state-row{
 
-            flex-wrap:wrap;
-
+            flex-wrap:wrap!important;
         }
 
 
         #dp-state{
 
-            width:100%;
+            width:100%!important;
 
-            flex:none;
-
+            flex:none!important;
         }
 
 
         #dp-duplicate-comments{
 
-            width:100%;
-
+            width:100%!important;
         }
 
     }
@@ -3265,14 +3469,125 @@ document.head.appendChild(
 );
 
 
-document.body.appendChild(
+/* =========================================================
+   APPEND POPUP INSIDE SIDEBAR
+   ========================================================= */
+
+popupContainer.appendChild(
     overlay
 );
 
 
-/* =====================================================
+/* =========================================================
+   KEEP POPUP AT SIDEBAR LEFT-BOTTOM
+   ========================================================= */
+
+const positionPopupInSidebar=()=>{
+
+    const popupElement=
+        document.getElementById(
+            "dispute-popup"
+        );
+
+
+    if(!popupElement)
+        return;
+
+
+    /*
+     * The CSS already handles the actual placement:
+     *
+     * left: 12px
+     * bottom: 12px
+     *
+     * This function simply reasserts those values.
+     */
+
+    popupElement.style.setProperty(
+        "left",
+        "12px",
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "right",
+        "auto",
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "top",
+        "auto",
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "bottom",
+        "12px",
+        "important"
+    );
+
+};
+
+
+/* =========================================================
+   INITIAL POSITION
+   ========================================================= */
+
+requestAnimationFrame(()=>{
+
+    positionPopupInSidebar();
+
+});
+
+
+/* =========================================================
+   WINDOW RESIZE
+   ========================================================= */
+
+window.addEventListener(
+    "resize",
+    positionPopupInSidebar,
+    {
+        passive:true
+    }
+);
+
+
+/* =========================================================
+   SIDEBAR RESIZE OBSERVER
+   ========================================================= */
+
+if(
+    sidebar &&
+    typeof ResizeObserver!=="undefined"
+){
+
+    const sidebarResizeObserver=
+        new ResizeObserver(
+            ()=>{
+                positionPopupInSidebar();
+            }
+        );
+
+
+    sidebarResizeObserver.observe(
+        sidebar
+    );
+
+
+    overlay.__sidebarResizeObserver=
+        sidebarResizeObserver;
+
+}
+
+
+/* =========================================================
    ELEMENTS
-   ===================================================== */
+   ========================================================= */
 
 const processorInput=
     document.getElementById(
@@ -3370,9 +3685,9 @@ arbitIdBtn.onclick=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    USER NAME + PROCESSOR NAME
-   ===================================================== */
+   ========================================================= */
 
 let currentName=
     getName();
@@ -3388,9 +3703,9 @@ nameInput.value=
     currentName;
 
 
-/* =====================================================
+/* =========================================================
    INITIAL LOCK STATE
-   ===================================================== */
+   ========================================================= */
 
 if(
     currentName &&
@@ -3446,9 +3761,9 @@ if(
 }
 
 
-/* =====================================================
+/* =========================================================
    EDIT
-   ===================================================== */
+   ========================================================= */
 
 editBtn.onclick=()=>{
 
@@ -3474,9 +3789,9 @@ editBtn.onclick=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    SAVE
-   ===================================================== */
+   ========================================================= */
 
 saveBtn.onclick=()=>{
 
@@ -3565,9 +3880,9 @@ saveBtn.onclick=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    VALIDATE MAIN FORM
-   ===================================================== */
+   ========================================================= */
 
 const validate=()=>{
 
@@ -3636,9 +3951,9 @@ const validate=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    VALIDATE YES FORM
-   ===================================================== */
+   ========================================================= */
 
 const validateYesFields=()=>{
 
@@ -3669,9 +3984,9 @@ const validateYesFields=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    UPDATE CONTINUE
-   ===================================================== */
+   ========================================================= */
 
 const updateContinueButton=()=>{
 
@@ -3698,9 +4013,9 @@ const updateContinueButton=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    YES FIELD LISTENERS
-   ===================================================== */
+   ========================================================= */
 
 emailInput.addEventListener(
     "input",
@@ -3728,9 +4043,9 @@ nonBifurcatedInput.addEventListener(
 );
 
 
-/* =====================================================
+/* =========================================================
    GO
-   ===================================================== */
+   ========================================================= */
 
 const processGo=()=>{
 
@@ -3821,13 +4136,6 @@ const buildRow=(
             actualL
         );
 
-
-    /*
-     * A:R remain exactly as before.
-     *
-     * S = Processor Name
-     * T = Philippine Date
-     */
 
     const row=[
 
@@ -4035,6 +4343,15 @@ noBtn.onclick=async()=>{
 
     const copied=
         await copyText(output);
+
+
+    if(
+        overlay.__sidebarResizeObserver
+    ){
+
+        overlay.__sidebarResizeObserver.disconnect();
+
+    }
 
 
     overlay.remove();
@@ -4247,6 +4564,15 @@ continueBtn.onclick=async()=>{
         await copyText(output);
 
 
+    if(
+        overlay.__sidebarResizeObserver
+    ){
+
+        overlay.__sidebarResizeObserver.disconnect();
+
+    }
+
+
     overlay.remove();
     style.remove();
 
@@ -4417,6 +4743,15 @@ overlay.addEventListener(
 
             e.preventDefault();
 
+            if(
+                overlay.__sidebarResizeObserver
+            ){
+
+                overlay.__sidebarResizeObserver.disconnect();
+
+            }
+
+
             overlay.remove();
             style.remove();
 
@@ -4475,6 +4810,15 @@ overlay.addEventListener(
 
 closeBtn.onclick=()=>{
 
+    if(
+        overlay.__sidebarResizeObserver
+    ){
+
+        overlay.__sidebarResizeObserver.disconnect();
+
+    }
+
+
     overlay.remove();
     style.remove();
 
@@ -4497,7 +4841,9 @@ await popup();
 })();
 
 
-// =================================================
+
+
+        // =================================================
         // END YOUR EXISTING CODE
         // =================================================
     }
@@ -4721,5 +5067,3 @@ await popup();
         };
 
 })();
-       
-       
