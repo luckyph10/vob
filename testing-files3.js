@@ -1,4 +1,3 @@
-
 (async()=>{
 
 /* =========================================================
@@ -183,11 +182,6 @@ const arbitIdLinks=[
         'a[title="Open Arbit"][href*="calculator/"]'
     )
 ];
-
-
-/* =========================================================
-   GET IDS
-   ========================================================= */
 
 const ids=[
     ...arbitIdLinks
@@ -431,7 +425,6 @@ const getColumnRValue=(actualG,actualL)=>{
     const g=normalizeValue(actualG);
     const l=normalizeValue(actualL);
 
-
     console.log(
         "========================================"
     );
@@ -461,10 +454,6 @@ const getColumnRValue=(actualG,actualL)=>{
     );
 
 
-    /* =====================================================
-       COLUMN L = CLOSED
-       ===================================================== */
-
     if(
         l==="closed"||
         l.includes("closed")
@@ -480,10 +469,6 @@ const getColumnRValue=(actualG,actualL)=>{
 
     }
 
-
-    /* =====================================================
-       COLUMN G = PLAN TYPE VALIDATED
-       ===================================================== */
 
     if(
         g.includes(
@@ -502,10 +487,6 @@ const getColumnRValue=(actualG,actualL)=>{
     }
 
 
-    /* =====================================================
-       COLUMN G = PLAN TYPE OBJECTION SUBMITTED
-       ===================================================== */
-
     if(
         g.includes(
             "plan type objection submitted"
@@ -522,10 +503,6 @@ const getColumnRValue=(actualG,actualL)=>{
 
     }
 
-
-    /* =====================================================
-       COLUMN G = TIMELINE ENFORCEMENT SUBMITTED TO IDRE
-       ===================================================== */
 
     if(
         g.includes(
@@ -544,11 +521,6 @@ const getColumnRValue=(actualG,actualL)=>{
     }
 
 
-    /* =====================================================
-       COLUMN G = ADDITIONAL INFO PROVIDED TO IDRE
-       THROUGH EMAIL
-       ===================================================== */
-
     if(
         g.includes(
             "additional info provided to idre through email"
@@ -566,11 +538,6 @@ const getColumnRValue=(actualG,actualL)=>{
     }
 
 
-    /* =====================================================
-       COLUMN G = ADDITIONAL INFO PROVIDED TO IDRE
-       THROUGH PORTAL
-       ===================================================== */
-
     if(
         g.includes(
             "additional info provided to idre through portal"
@@ -587,10 +554,6 @@ const getColumnRValue=(actualG,actualL)=>{
 
     }
 
-
-    /* =====================================================
-       NO MATCH
-       ===================================================== */
 
     console.warn(
         "NO G/L -> R RULE MATCHED",
@@ -716,6 +679,7 @@ const showCopyMessage=(message,clipboardText)=>{
     toast.style.cssText=
     "position:fixed;right:12px;bottom:12px;left:auto;top:auto;transform:none;padding:10px 12px;border-radius:3px;background:#202a36;border:1px solid #465363;color:#fff;font:600 11px Arial,sans-serif;z-index:2147483647;box-shadow:0 4px 14px rgba(0,0,0,.45);width:390px;max-width:calc(100vw - 24px);text-align:left;box-sizing:border-box";
 
+
     const messageEl=
         toast.querySelector(
             "#dct-message"
@@ -734,6 +698,7 @@ const showCopyMessage=(message,clipboardText)=>{
 
     copyAgainBtn.style.cssText=
     "margin-top:7px;height:28px;padding:0 11px;border:1px solid #536171;border-radius:2px;background:#303c4a;color:#fff;font:700 10px Arial,sans-serif;cursor:pointer";
+
 
     copyAgainBtn.onclick=async()=>{
 
@@ -2359,6 +2324,67 @@ const popup=()=>new Promise(resolve=>{
         old.remove();
 
 
+    /*
+     * =====================================================
+     * FIND THE SIDEBAR
+     * =====================================================
+     *
+     * The popup will now live INSIDE .sb-nav.
+     */
+
+    const sidebar=
+        document.querySelector(
+            "nav.sb-nav"
+        );
+
+
+    /*
+     * Fallback in case the nav is not found.
+     * This keeps the script functional instead of failing.
+     */
+
+    const popupContainer=
+        sidebar||
+        document.body;
+
+
+    if(!sidebar){
+
+        console.warn(
+            "nav.sb-nav not found. Popup will use document.body."
+        );
+
+    }
+
+
+    /*
+     * Make the sidebar the positioning reference.
+     */
+
+    if(sidebar){
+
+        const computed=
+            window.getComputedStyle(
+                sidebar
+            );
+
+
+        if(
+            computed.position===
+            "static"
+        ){
+
+            sidebar.style.setProperty(
+                "position",
+                "relative",
+                "important"
+            );
+
+        }
+
+    }
+
+
     const overlay=
         document.createElement("div");
 
@@ -2699,37 +2725,64 @@ style.id=
 style.textContent=`
 
     /* =====================================================
-       DISPUTE POPUP — POSITIONED UNDER SERVICE LINE
+       SIDEBAR POPUP
        ===================================================== */
 
+    /*
+     * The overlay is now INSIDE nav.sb-nav.
+     *
+     * It does not cover the page.
+     * It simply provides the positioning layer.
+     */
+
     #dispute-popup-overlay{
-        position:fixed!important;
-        inset:0!important;
-        width:100vw!important;
-        height:100vh!important;
+
+        position:absolute!important;
+
+        left:0!important;
+        right:0!important;
+        top:0!important;
+        bottom:0!important;
+
+        width:100%!important;
+        height:100%!important;
+
         z-index:2147483646!important;
+
         pointer-events:none!important;
+
         isolation:isolate!important;
+
+        box-sizing:border-box!important;
     }
 
 
-    #dispute-popup{
-        pointer-events:auto!important;
-        position:fixed!important;
+    /*
+     * Main popup:
+     *
+     * LEFT + BOTTOM of the sidebar.
+     */
 
-        /*
-         * Position is dynamically calculated from
-         * the Service Line selector.
-         */
-        left:0!important;
-        top:0!important;
+    #dispute-popup{
+
+        pointer-events:auto!important;
+
+        position:absolute!important;
+
+        left:12px!important;
+        bottom:12px!important;
+
         right:auto!important;
-        bottom:auto!important;
+        top:auto!important;
 
         width:390px!important;
-        max-width:calc(100vw - 24px)!important;
 
-        max-height:calc(100vh - 78px)!important;
+        max-width:
+            calc(100% - 24px)!important;
+
+        max-height:
+            calc(100% - 24px)!important;
+
         overflow-y:auto!important;
         overflow-x:hidden!important;
 
@@ -2738,16 +2791,24 @@ style.textContent=`
         border-radius:4px!important;
 
         background:#202a36!important;
-        border:1px solid #465363!important;
+
+        border:
+            1px solid
+            #465363!important;
 
         box-shadow:
-            0 4px 14px rgba(0,0,0,.45)!important;
+            0 4px 14px
+            rgba(0,0,0,.45)!important;
 
         backdrop-filter:none!important;
         -webkit-backdrop-filter:none!important;
 
-        font-family:Arial,sans-serif!important;
+        font-family:
+            Arial,
+            sans-serif!important;
+
         color:#fff!important;
+
         box-sizing:border-box!important;
     }
 
@@ -2757,12 +2818,17 @@ style.textContent=`
        ===================================================== */
 
     #dp-title-row{
+
         display:flex!important;
+
         align-items:center!important;
+
         justify-content:space-between!important;
+
         gap:8px!important;
 
         margin-bottom:10px!important;
+
         padding-right:30px!important;
 
         min-height:30px!important;
@@ -2770,29 +2836,43 @@ style.textContent=`
 
 
     #dp-title{
+
         font-size:14px!important;
+
         line-height:18px!important;
+
         font-weight:700!important;
+
         color:#fff!important;
+
         margin:0!important;
     }
 
 
     #dp-arbit-id{
+
         height:29px!important;
+
         padding:0 9px!important;
 
-        border:1px solid #657386!important;
+        border:
+            1px solid
+            #657386!important;
+
         border-radius:3px!important;
 
         background:#303c4a!important;
+
         color:#fff!important;
 
         font-size:10px!important;
+
         font-weight:700!important;
+
         letter-spacing:.2px!important;
 
         cursor:pointer!important;
+
         white-space:nowrap!important;
 
         box-shadow:none!important;
@@ -2800,35 +2880,47 @@ style.textContent=`
 
 
     #dp-arbit-id:hover{
+
         background:#3c4b5d!important;
+
         transform:none!important;
     }
 
 
     #dp-close{
+
         position:absolute!important;
+
         top:5px!important;
+
         right:6px!important;
 
         width:25px!important;
+
         height:25px!important;
 
         border:0!important;
+
         border-radius:3px!important;
 
         background:transparent!important;
+
         color:#bfc8d3!important;
 
         font-size:21px!important;
+
         line-height:25px!important;
 
         cursor:pointer!important;
+
         padding:0!important;
     }
 
 
     #dp-close:hover{
+
         background:#394653!important;
+
         color:#fff!important;
     }
 
@@ -2848,7 +2940,9 @@ style.textContent=`
     #dp-label-non-bifurcated{
 
         font-size:10px!important;
+
         line-height:13px!important;
+
         font-weight:600!important;
 
         color:#d5dce5!important;
@@ -2858,6 +2952,7 @@ style.textContent=`
 
 
     #dp-label-processor{
+
         margin-top:0!important;
     }
 
@@ -2871,9 +2966,11 @@ style.textContent=`
     #dp-state-row{
 
         display:flex!important;
+
         gap:5px!important;
 
         width:100%!important;
+
         align-items:center!important;
     }
 
@@ -2894,21 +2991,29 @@ style.textContent=`
     #dp-duplicate-comments{
 
         height:29px!important;
+
         min-height:29px!important;
 
         box-sizing:border-box!important;
 
-        border:1px solid #536171!important;
+        border:
+            1px solid
+            #536171!important;
+
         border-radius:2px!important;
 
         background:#111a24!important;
+
         color:#fff!important;
 
         outline:none!important;
 
         padding:0 7px!important;
 
-        font-family:Arial,sans-serif!important;
+        font-family:
+            Arial,
+            sans-serif!important;
+
         font-size:11px!important;
     }
 
@@ -2916,14 +3021,19 @@ style.textContent=`
     #dp-processor,
     #dp-name,
     #dp-state{
+
         flex:1!important;
+
         min-width:0!important;
     }
 
 
     #dp-duplicate-comments{
+
         width:145px!important;
+
         flex-shrink:0!important;
+
         cursor:pointer!important;
     }
 
@@ -2934,6 +3044,7 @@ style.textContent=`
     #dp-plan-evidence,
     #dp-verified,
     #dp-non-bifurcated{
+
         width:100%!important;
     }
 
@@ -2942,6 +3053,7 @@ style.textContent=`
     #dp-plan-evidence,
     #dp-verified,
     #dp-non-bifurcated{
+
         cursor:pointer!important;
     }
 
@@ -2953,6 +3065,7 @@ style.textContent=`
     #dp-duplicate-comments option{
 
         background:#202a36!important;
+
         color:#fff!important;
     }
 
@@ -2997,22 +3110,29 @@ style.textContent=`
 
         padding:0 9px!important;
 
-        border:1px solid #596878!important;
+        border:
+            1px solid
+            #596878!important;
+
         border-radius:2px!important;
 
         background:#303c4a!important;
+
         color:#fff!important;
 
         font-size:10px!important;
+
         font-weight:700!important;
 
         cursor:pointer!important;
+
         white-space:nowrap!important;
     }
 
 
     #dp-edit:hover,
     #dp-save:hover{
+
         background:#3d4b5b!important;
     }
 
@@ -3020,17 +3140,23 @@ style.textContent=`
     #dp-go{
 
         width:100%!important;
+
         height:31px!important;
 
         margin-top:7px!important;
 
-        border:1px solid #3f8b61!important;
+        border:
+            1px solid
+            #3f8b61!important;
+
         border-radius:2px!important;
 
         background:#276b48!important;
+
         color:#fff!important;
 
         font-size:11px!important;
+
         font-weight:700!important;
 
         cursor:pointer!important;
@@ -3038,11 +3164,13 @@ style.textContent=`
 
 
     #dp-go:hover{
+
         background:#318158!important;
     }
 
 
     #dp-save{
+
         display:none;
     }
 
@@ -3058,12 +3186,15 @@ style.textContent=`
         border-radius:2px!important;
 
         background:#286744!important;
+
         color:#dff7e8!important;
 
         font-weight:700!important;
+
         font-size:10px!important;
 
         align-items:center!important;
+
         justify-content:center!important;
 
         white-space:nowrap!important;
@@ -3081,6 +3212,7 @@ style.textContent=`
         min-height:13px!important;
 
         font-size:9px!important;
+
         line-height:12px!important;
 
         color:#9ca8b6!important;
@@ -3094,6 +3226,7 @@ style.textContent=`
     #dp-eligible{
 
         margin-top:8px!important;
+
         padding-top:8px!important;
 
         border-top:
@@ -3105,6 +3238,7 @@ style.textContent=`
     #dp-eligible-title{
 
         font-size:10px!important;
+
         line-height:13px!important;
 
         font-weight:600!important;
@@ -3118,6 +3252,7 @@ style.textContent=`
     #dp-eligible-buttons{
 
         display:flex!important;
+
         gap:5px!important;
     }
 
@@ -3138,6 +3273,7 @@ style.textContent=`
         color:#fff!important;
 
         font-size:10px!important;
+
         font-weight:700!important;
 
         cursor:pointer!important;
@@ -3145,21 +3281,25 @@ style.textContent=`
 
 
     #dp-no{
+
         background:#713536!important;
     }
 
 
     #dp-no:hover{
+
         background:#89403f!important;
     }
 
 
     #dp-yes{
+
         background:#285e9c!important;
     }
 
 
     #dp-yes:hover{
+
         background:#3274bb!important;
     }
 
@@ -3171,6 +3311,7 @@ style.textContent=`
     #dp-yes-extra{
 
         margin-top:8px!important;
+
         padding-top:8px!important;
 
         border-top:
@@ -3182,6 +3323,7 @@ style.textContent=`
     #dp-continue{
 
         width:100%!important;
+
         height:30px!important;
 
         margin-top:7px!important;
@@ -3197,6 +3339,7 @@ style.textContent=`
         color:#fff!important;
 
         font-size:10px!important;
+
         font-weight:700!important;
 
         cursor:pointer!important;
@@ -3204,6 +3347,7 @@ style.textContent=`
 
 
     #dp-continue:hover:not(:disabled){
+
         background:#318158!important;
     }
 
@@ -3227,61 +3371,79 @@ style.textContent=`
        ===================================================== */
 
     #dispute-popup::-webkit-scrollbar{
+
         width:7px!important;
     }
 
 
     #dispute-popup::-webkit-scrollbar-track{
+
         background:#18212b!important;
     }
 
 
     #dispute-popup::-webkit-scrollbar-thumb{
+
         background:#566271!important;
+
         border-radius:2px!important;
     }
 
 
     #dispute-popup::-webkit-scrollbar-thumb:hover{
+
         background:#687789!important;
     }
 
 
     /* =====================================================
-       SMALL SCREENS
+       SMALL SIDEBARS
        ===================================================== */
 
     @media(max-width:650px){
 
         #dispute-popup{
 
+            left:8px!important;
+
+            bottom:8px!important;
+
             width:
-                calc(100vw - 16px)!important;
+                calc(100% - 16px)!important;
+
+            max-width:
+                calc(100% - 16px)!important;
 
             max-height:
-                calc(100vh - 16px)!important;
+                calc(100% - 16px)!important;
         }
 
 
         #dp-title{
+
             font-size:13px!important;
         }
 
 
         #dp-state-row{
+
             flex-wrap:wrap!important;
         }
 
 
         #dp-state{
+
             width:100%!important;
+
             flex:none!important;
         }
 
 
         #dp-duplicate-comments{
+
             width:100%!important;
         }
+
     }
 
 `;
@@ -3292,16 +3454,20 @@ document.head.appendChild(
 );
 
 
-document.body.appendChild(
+/* =========================================================
+   APPEND POPUP INSIDE SIDEBAR
+   ========================================================= */
+
+popupContainer.appendChild(
     overlay
 );
 
 
 /* =========================================================
-   POSITION POPUP UNDER SERVICE LINE SELECTOR
+   KEEP POPUP AT SIDEBAR LEFT-BOTTOM
    ========================================================= */
 
-const positionPopupUnderServiceLine=()=>{
+const positionPopupInSidebar=()=>{
 
     const popupElement=
         document.getElementById(
@@ -3314,318 +3480,17 @@ const positionPopupUnderServiceLine=()=>{
 
 
     /*
-     * Find the Service Line label.
+     * The CSS already handles the actual placement:
      *
-     * Example:
-     * <span class="input-group-text col-5">
-     *     Service Line
-     * </span>
-     */
-    const serviceLineLabel=[
-        ...document.querySelectorAll(
-            "span.input-group-text"
-        )
-    ].find(el=>{
-
-        return(
-            (
-                el.textContent||""
-            )
-            .replace(/\u00A0/g," ")
-            .replace(/\r?\n/g," ")
-            .replace(/\s+/g," ")
-            .trim()
-            .toLowerCase()
-            ===
-            "service line"
-        );
-
-    });
-
-
-    if(!serviceLineLabel){
-
-        console.warn(
-            "Service Line label not found. Popup will remain at default position."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Find the ng-select belonging to the Service Line field.
-     */
-    let serviceLineSelector=
-        serviceLineLabel
-            .parentElement
-            ?.querySelector(
-                "ng-select"
-            );
-
-
-    /*
-     * If the selector is not in the immediate parent,
-     * search a few parent levels.
-     */
-    if(!serviceLineSelector){
-
-        let parent=
-            serviceLineLabel.parentElement;
-
-
-        for(
-            let i=0;
-            i<6 && parent;
-            i++
-        ){
-
-            serviceLineSelector=
-                parent.querySelector(
-                    "ng-select"
-                );
-
-
-            if(serviceLineSelector)
-                break;
-
-
-            parent=
-                parent.parentElement;
-
-        }
-
-    }
-
-
-    /*
-     * Fallback using the actual .ng-input / combobox
-     * supplied in the HTML.
-     */
-    if(!serviceLineSelector){
-
-        const serviceInputs=[
-            ...document.querySelectorAll(
-                ".ng-input input[role='combobox']"
-            )
-        ];
-
-
-        for(
-            const input of serviceInputs
-        ){
-
-            const ngSelect=
-                input.closest(
-                    "ng-select"
-                );
-
-
-            if(!ngSelect)
-                continue;
-
-
-            /*
-             * Check nearby text for "Service Line".
-             */
-            const nearbyText=
-                (
-                    ngSelect.parentElement
-                        ?.parentElement
-                        ?.textContent||
-                    ngSelect.parentElement
-                        ?.textContent||
-                    ""
-                )
-                .replace(/\u00A0/g," ")
-                .replace(/\r?\n/g," ")
-                .replace(/\s+/g," ")
-                .trim();
-
-
-            if(
-                /service\s*line/i.test(
-                    nearbyText
-                )
-            ){
-
-                serviceLineSelector=
-                    ngSelect;
-
-                break;
-
-            }
-
-        }
-
-    }
-
-
-    /*
-     * Last fallback:
-     * use the closest element containing the
-     * Service Line label and locate its ng-select.
-     */
-    if(!serviceLineSelector){
-
-        let container=
-            serviceLineLabel.parentElement;
-
-
-        while(
-            container &&
-            container!==document.body &&
-            !serviceLineSelector
-        ){
-
-            serviceLineSelector=
-                container.querySelector(
-                    "ng-select"
-                );
-
-
-            if(serviceLineSelector)
-                break;
-
-
-            container=
-                container.parentElement;
-
-        }
-
-    }
-
-
-    if(!serviceLineSelector){
-
-        console.warn(
-            "Service Line ng-select not found."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Get the selector's exact screen position.
-     */
-    const rect=
-        serviceLineSelector.getBoundingClientRect();
-
-
-    /*
-     * Force the popup to have its normal width
-     * before calculating horizontal placement.
-     */
-    const popupWidth=
-        popupElement.offsetWidth||
-        390;
-
-
-    const popupHeight=
-        popupElement.offsetHeight||
-        0;
-
-
-    const viewportWidth=
-        window.innerWidth;
-
-
-    const viewportHeight=
-        window.innerHeight;
-
-
-    /*
-     * Start aligned with the left edge of
-     * the Service Line selector.
-     */
-    let left=
-        rect.left;
-
-
-    /*
-     * Prevent the popup from going outside
-     * the right side of the screen.
-     */
-    if(
-        left+popupWidth>
-        viewportWidth-12
-    ){
-
-        left=
-            viewportWidth-
-            popupWidth-
-            12;
-
-    }
-
-
-    /*
-     * Prevent the popup from going outside
-     * the left side of the screen.
-     */
-    if(left<12)
-        left=12;
-
-
-    /*
-     * Normally place it 6px underneath
-     * the Service Line selector.
-     */
-    let top=
-        rect.bottom+6;
-
-
-    /*
-     * If there isn't enough room below the selector,
-     * place it above the selector instead.
+     * left: 12px
+     * bottom: 12px
      *
-     * This does not change the UI — it only prevents
-     * the popup from being inaccessible off-screen.
+     * This function simply reasserts those values.
      */
-    if(
-        popupHeight>0 &&
-        top+popupHeight>
-        viewportHeight-8
-    ){
-
-        const above=
-            rect.top-
-            popupHeight-
-            6;
-
-
-        if(above>=8){
-
-            top=above;
-
-        }else{
-
-            top=
-                Math.max(
-                    8,
-                    viewportHeight-
-                    popupHeight-
-                    8
-                );
-
-        }
-
-    }
-
 
     popupElement.style.setProperty(
         "left",
-        `${Math.round(left)}px`,
-        "important"
-    );
-
-
-    popupElement.style.setProperty(
-        "top",
-        `${Math.round(top)}px`,
+        "12px",
         "important"
     );
 
@@ -3638,52 +3503,76 @@ const positionPopupUnderServiceLine=()=>{
 
 
     popupElement.style.setProperty(
-        "bottom",
+        "top",
         "auto",
+        "important"
+    );
+
+
+    popupElement.style.setProperty(
+        "bottom",
+        "12px",
         "important"
     );
 
 };
 
 
-/*
- * Wait until the popup has been rendered.
- */
+/* =========================================================
+   INITIAL POSITION
+   ========================================================= */
+
 requestAnimationFrame(()=>{
 
-    positionPopupUnderServiceLine();
+    positionPopupInSidebar();
 
 });
 
 
-/*
- * Recalculate when the browser window changes size.
- */
+/* =========================================================
+   WINDOW RESIZE
+   ========================================================= */
+
 window.addEventListener(
     "resize",
-    positionPopupUnderServiceLine,
+    positionPopupInSidebar,
     {
         passive:true
     }
 );
 
 
-/*
- * Recalculate when the page scrolls.
- */
-window.addEventListener(
-    "scroll",
-    positionPopupUnderServiceLine,
-    {
-        passive:true,
-        capture:true
-    }
-);
+/* =========================================================
+   SIDEBAR RESIZE OBSERVER
+   ========================================================= */
+
+if(
+    sidebar &&
+    typeof ResizeObserver!=="undefined"
+){
+
+    const sidebarResizeObserver=
+        new ResizeObserver(
+            ()=>{
+                positionPopupInSidebar();
+            }
+        );
 
 
-/* =====================================================
+    sidebarResizeObserver.observe(
+        sidebar
+    );
+
+
+    overlay.__sidebarResizeObserver=
+        sidebarResizeObserver;
+
+}
+
+
+/* =========================================================
    ELEMENTS
-   ===================================================== */
+   ========================================================= */
 
 const processorInput=
     document.getElementById(
@@ -3781,9 +3670,9 @@ arbitIdBtn.onclick=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    USER NAME + PROCESSOR NAME
-   ===================================================== */
+   ========================================================= */
 
 let currentName=
     getName();
@@ -3799,9 +3688,9 @@ nameInput.value=
     currentName;
 
 
-/* =====================================================
+/* =========================================================
    INITIAL LOCK STATE
-   ===================================================== */
+   ========================================================= */
 
 if(
     currentName &&
@@ -3857,9 +3746,9 @@ if(
 }
 
 
-/* =====================================================
+/* =========================================================
    EDIT
-   ===================================================== */
+   ========================================================= */
 
 editBtn.onclick=()=>{
 
@@ -3885,9 +3774,9 @@ editBtn.onclick=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    SAVE
-   ===================================================== */
+   ========================================================= */
 
 saveBtn.onclick=()=>{
 
@@ -3976,9 +3865,9 @@ saveBtn.onclick=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    VALIDATE MAIN FORM
-   ===================================================== */
+   ========================================================= */
 
 const validate=()=>{
 
@@ -4047,9 +3936,9 @@ const validate=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    VALIDATE YES FORM
-   ===================================================== */
+   ========================================================= */
 
 const validateYesFields=()=>{
 
@@ -4080,9 +3969,9 @@ const validateYesFields=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    UPDATE CONTINUE
-   ===================================================== */
+   ========================================================= */
 
 const updateContinueButton=()=>{
 
@@ -4109,9 +3998,9 @@ const updateContinueButton=()=>{
 };
 
 
-/* =====================================================
+/* =========================================================
    YES FIELD LISTENERS
-   ===================================================== */
+   ========================================================= */
 
 emailInput.addEventListener(
     "input",
@@ -4139,9 +4028,9 @@ nonBifurcatedInput.addEventListener(
 );
 
 
-/* =====================================================
+/* =========================================================
    GO
-   ===================================================== */
+   ========================================================= */
 
 const processGo=()=>{
 
@@ -4232,13 +4121,6 @@ const buildRow=(
             actualL
         );
 
-
-    /*
-     * A:R remain exactly as before.
-     *
-     * S = Processor Name
-     * T = Philippine Date
-     */
 
     const row=[
 
@@ -4446,6 +4328,15 @@ noBtn.onclick=async()=>{
 
     const copied=
         await copyText(output);
+
+
+    if(
+        overlay.__sidebarResizeObserver
+    ){
+
+        overlay.__sidebarResizeObserver.disconnect();
+
+    }
 
 
     overlay.remove();
@@ -4658,6 +4549,15 @@ continueBtn.onclick=async()=>{
         await copyText(output);
 
 
+    if(
+        overlay.__sidebarResizeObserver
+    ){
+
+        overlay.__sidebarResizeObserver.disconnect();
+
+    }
+
+
     overlay.remove();
     style.remove();
 
@@ -4828,6 +4728,15 @@ overlay.addEventListener(
 
             e.preventDefault();
 
+            if(
+                overlay.__sidebarResizeObserver
+            ){
+
+                overlay.__sidebarResizeObserver.disconnect();
+
+            }
+
+
             overlay.remove();
             style.remove();
 
@@ -4885,6 +4794,15 @@ overlay.addEventListener(
    ========================================================= */
 
 closeBtn.onclick=()=>{
+
+    if(
+        overlay.__sidebarResizeObserver
+    ){
+
+        overlay.__sidebarResizeObserver.disconnect();
+
+    }
+
 
     overlay.remove();
     style.remove();
