@@ -54,6 +54,7 @@
             'Ineligible to Submit: DRS: Closure Request Submitted. Closure team has already received a closure request.',
             'Pending Onshore Review: Dispute Status Closed. Patient over 65 years old, VOB is not available. Final payment determination uploaded.',
             'Pending Onshore Review: Incomplete ING evidence.',
+            'Dispute is Pending:  Incomplete eligible evidence as per onshore outdated VOB.',
             'Pending Onshore Review: Unable to update the dispute tracker c/o Lillian Madison.',
             'Pending Onshore Review: Plan type is Self funded, Policy Type is Medicaid.',
             'Dispute is pending VOB: No VOB checkmark AND no case notes confirming plan type.',
