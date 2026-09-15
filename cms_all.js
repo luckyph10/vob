@@ -500,7 +500,7 @@
     if (!cfg.initials) {
         openPopup(true);
     } else {
-        setTimeout(insertComment, 500);
+        setTimeout(insertComment, 2000);
     }
 
 })();
