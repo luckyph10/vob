@@ -397,7 +397,7 @@
                             popup.remove();
                         }
 
-                    }, 300);
+                    }, 2000);
                 }
 
             }, 2000);
@@ -488,9 +488,9 @@
                     badge.remove();
                 }
 
-            }, 300);
+            }, 2000);
 
-        }, 1000);
+        }, 2000);
     }
 
     createBadge();
@@ -500,7 +500,7 @@
     if (!cfg.initials) {
         openPopup(true);
     } else {
-        setTimeout(insertComment, 2000);
+        setTimeout(insertComment, 0);
     }
 
 })();
