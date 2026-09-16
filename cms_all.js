@@ -1,363 +1,506 @@
 (function () {
-    'use strict';
 
-    if (!location.href.startsWith('https://arbit.halomd.com/dispute/')) {
-        return;
+    const KEY = "VOB_SETTINGS";
+
+    function getSettings() {
+        return JSON.parse(localStorage.getItem(KEY) || "{}");
     }
 
-    if (window.CMS_AUTO_COMMENT_LOADED) {
-        return;
-    }
-
-    window.CMS_AUTO_COMMENT_LOADED = true;
-
-    const INITIALS_KEY = 'cmsAutoCommentInitials';
-
-    function getPHDate() {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Manila',
-            month: '2-digit',
-            day: '2-digit',
-            year: '2-digit'
-        }).format(new Date());
+    function saveSettings(data) {
+        localStorage.setItem(KEY, JSON.stringify(data));
     }
 
     function getPCDate() {
-        return new Intl.DateTimeFormat('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: '2-digit'
-        }).format(new Date());
+        const d = new Date();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const yy = String(d.getFullYear()).slice(-2);
+        return `${mm}/${dd}/${yy}`;
     }
 
-    function toast(message, color = '#00c853') {
+    function getPHDate() {
+        const d = new Date(
+            new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Manila"
+            })
+        );
 
-        const old =
-            document.getElementById('cms-toast');
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const yy = String(d.getFullYear()).slice(-2);
 
-        if (old) old.remove();
-
-        const div =
-            document.createElement('div');
-
-        div.id = 'cms-toast';
-
-        div.style.cssText = `
-            position:fixed;
-            top:10px;
-            right:10px;
-            z-index:99999999;
-            background:${color};
-            color:white;
-            padding:10px 14px;
-            border-radius:8px;
-            font-family:Arial,sans-serif;
-            font-size:13px;
-            font-weight:bold;
-            box-shadow:0 4px 16px rgba(0,0,0,.4);
-        `;
-
-        div.textContent = message;
-
-        document.body.appendChild(div);
-
-        setTimeout(() => {
-            if (div.parentNode) div.remove();
-        }, 2000);
+        return `${mm}/${dd}/${yy}`;
     }
 
-    function openSettings() {
+    function insertComment() {
 
-        const old =
-            document.getElementById('cms-settings');
+        const cfg = getSettings();
 
-        if (old) old.remove();
+        if (!cfg.initials) {
+            openPopup(false);
+            return;
+        }
 
-        const saved =
-            localStorage.getItem(INITIALS_KEY) || '';
+        const textarea =
+            document.querySelector('textarea[name="comments"]');
 
-        const panel =
-            document.createElement('div');
+        if (!textarea) {
+            alert("Comments box not found.");
+            return;
+        }
 
-        panel.id = 'cms-settings';
+        let comment = "";
 
-        panel.style.cssText = `
+        if (cfg.mode === "PT") {
+
+            comment =
+                cfg.ptComment +
+                " - " +
+                getPHDate() +
+                " - " +
+                cfg.initials;
+
+        } else {
+
+            comment =
+                getPCDate() +
+                " VOB verified, no change to NSA jurisdiction - " +
+                cfg.initials;
+        }
+
+        textarea.value =
+            comment +
+            (textarea.value.trim()
+                ? "\n\n" + textarea.value
+                : "");
+
+        textarea.dispatchEvent(
+            new Event("input", {
+                bubbles: true
+            })
+        );
+
+        textarea.dispatchEvent(
+            new Event("change", {
+                bubbles: true
+            })
+        );
+    }
+
+    function closePopup() {
+
+        const popup =
+            document.getElementById("vobPopup");
+
+        if (popup) {
+            popup.remove();
+        }
+    }
+
+    function openPopup(autoHide) {
+
+        closePopup();
+
+        const cfg = getSettings();
+
+        let mode = cfg.mode || "VOB";
+
+        const popup =
+            document.createElement("div");
+
+        popup.id = "vobPopup";
+
+        popup.style.cssText = `
             position:fixed;
-            top:10px;
+            top:45px;
             left:10px;
-            width:260px;
-            background:rgba(0,0,0,.92);
+            width:220px;
+            background:${cfg.darkMode ? "#111827" : "rgba(0,43,92,.92)"};
             color:white;
-            padding:16px;
-            border-radius:12px;
-            z-index:99999999;
-            font-family:Arial,sans-serif;
-            box-shadow:0 6px 25px rgba(0,0,0,.6);
+            border-radius:10px;
+            overflow:hidden;
+            z-index:2147483647;
+            font-family:Segoe UI,Arial,sans-serif;
+            box-shadow:0 4px 15px rgba(0,0,0,.45);
         `;
 
-        panel.innerHTML = `
+        popup.innerHTML = `
             <div style="
+                padding:8px;
+                background:#001f44;
                 display:flex;
                 justify-content:space-between;
                 align-items:center;
-                margin-bottom:12px;
+                font-size:12px;
+                font-weight:600;
             ">
-                <b>CMS AUTO COMMENT</b>
 
-                <span
-                    id="cms-status"
-                    style="
-                        color:${saved ? '#00ff66' : '#ff5555'};
-                        font-size:12px;
-                    "
-                >
-                    ${saved ? '✓ Saved' : 'Not Saved'}
-                </span>
+                <span>VOB/PT</span>
+
+                <div>
+
+                    <button
+                        id="darkBtn"
+                        type="button"
+                        style="
+                            width:24px;
+                            height:24px;
+                            border:none;
+                            border-radius:4px;
+                            cursor:pointer;
+                            background:#111;
+                            color:#fff;
+                        "
+                    >🌙</button>
+
+                    <button
+                        id="closeBtn"
+                        type="button"
+                        style="
+                            width:24px;
+                            height:24px;
+                            border:none;
+                            border-radius:4px;
+                            cursor:pointer;
+                            background:#c62828;
+                            color:#fff;
+                        "
+                    >✕</button>
+
+                </div>
+
             </div>
 
-            <input
-                id="cms-initials"
-                type="text"
-                maxlength="10"
-                placeholder="Enter Initials"
-                value="${saved}"
-                style="
-                    width:100%;
-                    padding:10px;
-                    box-sizing:border-box;
-                    border:none;
-                    border-radius:8px;
-                    margin-bottom:10px;
-                "
-            >
+            <div style="padding:10px;">
 
-            <button
-                id="cms-save"
-                style="
-                    width:100%;
-                    border:none;
-                    padding:10px;
-                    border-radius:8px;
-                    background:#00c853;
-                    color:white;
-                    font-weight:bold;
-                    cursor:pointer;
-                "
-            >
-                Save
-            </button>
+                <div style="font-size:11px;">
+                    Initials
+                </div>
+
+                <input
+                    id="initials"
+                    maxlength="3"
+                    value="${cfg.initials || ""}"
+                    style="
+                        width:50px;
+                        text-align:center;
+                        margin-top:4px;
+                        text-transform:uppercase;
+                        font-weight:bold;
+                    "
+                >
+
+                <div style="
+                    display:flex;
+                    gap:4px;
+                    margin-top:10px;
+                ">
+
+                    <button
+                        id="vobBtn"
+                        type="button"
+                        style="
+                            flex:1;
+                            border:none;
+                            padding:6px;
+                            border-radius:5px;
+                            color:white;
+                            cursor:pointer;
+                        "
+                    >
+                        VOB
+                    </button>
+
+                    <button
+                        id="ptBtn"
+                        type="button"
+                        style="
+                            flex:1;
+                            border:none;
+                            padding:6px;
+                            border-radius:5px;
+                            color:white;
+                            cursor:pointer;
+                        "
+                    >
+                        PT
+                    </button>
+
+                </div>
+
+                <div
+                    id="ptArea"
+                    style="margin-top:8px;"
+                >
+
+                    <select
+                        id="ptComment"
+                        style="
+                            width:100%;
+                            padding:4px;
+                            font-size:11px;
+                        "
+                    >
+
+                        <option>
+                            Reviewed. Eligible. IDR Initiation document attached.
+                        </option>
+
+                        <option>
+                            Reviewed, no action required.
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div
+                    id="saveState"
+                    style="
+                        margin-top:8px;
+                        font-size:10px;
+                        color:#8cff8c;
+                    "
+                >
+                    Saved ✅
+                </div>
+
+                <button
+                    id="saveBtn"
+                    type="button"
+                    style="
+                        width:100%;
+                        margin-top:8px;
+                        border:none;
+                        background:#1976d2;
+                        color:white;
+                        padding:7px;
+                        border-radius:5px;
+                        cursor:pointer;
+                    "
+                >
+                    Save
+                </button>
+
+            </div>
         `;
 
-        document.body.appendChild(panel);
+        document.body.appendChild(popup);
 
-        document
-            .getElementById('cms-save')
-            .onclick = () => {
+        const vobBtn =
+            document.getElementById("vobBtn");
+
+        const ptBtn =
+            document.getElementById("ptBtn");
+
+        const ptArea =
+            document.getElementById("ptArea");
+
+        const saveState =
+            document.getElementById("saveState");
+
+        if (cfg.ptComment) {
+            document.getElementById("ptComment").value =
+                cfg.ptComment;
+        }
+
+        function refreshMode() {
+
+            vobBtn.style.background =
+                mode === "VOB"
+                    ? "#16a34a"
+                    : "#003b7a";
+
+            ptBtn.style.background =
+                mode === "PT"
+                    ? "#16a34a"
+                    : "#003b7a";
+
+            ptArea.style.display =
+                mode === "PT"
+                    ? "block"
+                    : "none";
+        }
+
+        refreshMode();
+
+        vobBtn.onclick = function () {
+            mode = "VOB";
+            saveState.innerHTML = "Unsaved ⚠️";
+            refreshMode();
+        };
+
+        ptBtn.onclick = function () {
+            mode = "PT";
+            saveState.innerHTML = "Unsaved ⚠️";
+            refreshMode();
+        };
+
+        document.getElementById("darkBtn").onclick =
+            function () {
+
+                saveSettings({
+                    ...cfg,
+                    darkMode: !cfg.darkMode
+                });
+
+                openPopup(false);
+            };
+
+        document.getElementById("closeBtn").onclick =
+            function () {
+                closePopup();
+            };
+
+        document.getElementById("saveBtn").onclick =
+            function () {
 
                 const initials =
                     document
-                        .getElementById('cms-initials')
+                        .getElementById("initials")
                         .value
                         .trim()
                         .toUpperCase();
 
                 if (!initials) {
-
-                    toast(
-                        'Initials Required',
-                        '#f44336'
-                    );
-
+                    alert("Enter initials");
                     return;
                 }
 
-                localStorage.setItem(
-                    INITIALS_KEY,
-                    initials
-                );
+                saveSettings({
+                    initials: initials,
+                    mode: mode,
+                    darkMode: cfg.darkMode || false,
+                    ptComment:
+                        document.getElementById("ptComment").value
+                });
 
-                panel.remove();
+                createBadge();
 
-                toast(
-                    '✓ Initials Saved'
-                );
+                closePopup();
             };
+
+        if (autoHide) {
+
+            setTimeout(() => {
+
+                if (document.getElementById("vobPopup")) {
+
+                    popup.style.transition =
+                        "opacity .3s";
+
+                    popup.style.opacity = "0";
+
+                    setTimeout(() => {
+
+                        if (popup.parentNode) {
+                            popup.remove();
+                        }
+
+                    }, 2000);
+                }
+
+            }, 2000);
+        }
     }
 
-    function insertComment(type) {
+    function createBadge() {
 
-        const textarea =
-            document.querySelector(
-                'textarea[name="comments"]'
-            );
+        const old =
+            document.getElementById("vobBadge");
 
-        if (!textarea) {
-
-            toast(
-                'Comments Field Not Found',
-                '#f44336'
-            );
-
-            return;
+        if (old) {
+            old.remove();
         }
 
-        const initials =
-            localStorage.getItem(
-                INITIALS_KEY
-            );
+        const cfg = getSettings();
 
-        if (!initials) {
+        const badge =
+            document.createElement("div");
 
-            openSettings();
+        badge.id = "vobBadge";
 
-            return;
-        }
+        badge.style.cssText = `
+            position:fixed;
+            top:10px;
+            left:10px;
+            background:rgba(0,43,92,.75);
+            backdrop-filter:blur(6px);
+            color:white;
+            padding:6px 8px;
+            border-radius:8px;
+            z-index:2147483647;
+            font-family:Segoe UI;
+            font-size:11px;
+            box-shadow:0 2px 8px rgba(0,0,0,.3);
+        `;
 
-        let comment = '';
+        badge.innerHTML = `
+            <div>
+                <b>${cfg.mode || "VOB"}</b>
+                |
+                ${cfg.initials || "---"}
+            </div>
 
-        if (type === 'eligible') {
+            <div style="
+                color:#8cff8c;
+                font-size:9px;
+            ">
+                Saved ✅
+            </div>
 
-            comment =
-                `Reviewed. Eligible. IDR Initiation document attached - ${getPHDate()} - ${initials}`;
+            <button
+                id="editBadgeBtn"
+                type="button"
+                style="
+                    margin-top:4px;
+                    width:100%;
+                    border:none;
+                    border-radius:4px;
+                    background:#0b4f99;
+                    color:white;
+                    cursor:pointer;
+                    font-size:10px;
+                    padding:3px;
+                "
+            >
+                Edit
+            </button>
+        `;
 
-        } else if (type === 'noaction') {
+        document.body.appendChild(badge);
 
-            comment =
-                `Reviewed, no action required. - ${getPHDate()} - ${initials}`;
-
-        } else if (type === 'pcdate') {
-
-            comment =
-                `Reviewed, no action required. - ${getPCDate()} - ${initials}`;
-        }
-
-        const existing =
-            textarea.value || '';
-
-        if (
-            existing
-                .toLowerCase()
-                .includes(comment.toLowerCase())
-        ) {
-
-            toast(
-                '⚠ Duplicate Comment',
-                '#f44336'
-            );
-
-            return;
-        }
-
-        const scrollTop =
-            textarea.scrollTop;
-
-        const selectionStart =
-            textarea.selectionStart;
-
-        const selectionEnd =
-            textarea.selectionEnd;
-
-        const newValue =
-            existing.trim()
-                ? comment + '\n\n' + existing
-                : comment;
-
-        textarea.value = newValue;
-
-        textarea.dispatchEvent(
-            new Event('input', {
-                bubbles: true
-            })
-        );
-
-        textarea.dispatchEvent(
-            new Event('change', {
-                bubbles: true
-            })
-        );
-
-        requestAnimationFrame(() => {
-
-            textarea.scrollTop =
-                scrollTop;
-
-            try {
-
-                textarea.setSelectionRange(
-                    selectionStart,
-                    selectionEnd
-                );
-
-            } catch (e) {}
-        });
-
-        toast('✓ Comment Added');
-    }
-
-    document.addEventListener(
-        'keydown',
-        function (e) {
-
-            // ALT + E
-            if (
-                e.altKey &&
-                !e.ctrlKey &&
-                !e.shiftKey &&
-                e.key.toLowerCase() === 'e'
-            ) {
-                e.preventDefault();
-                insertComment('eligible');
-                return;
-            }
-
-            // ALT + R
-            if (
-                e.altKey &&
-                !e.ctrlKey &&
-                !e.shiftKey &&
-                e.key.toLowerCase() === 'r'
-            ) {
-                e.preventDefault();
-                insertComment('noaction');
-                return;
-            }
-
-            // ALT + Q
-            if (
-                e.altKey &&
-                !e.ctrlKey &&
-                !e.shiftKey &&
-                e.key.toLowerCase() === 'q'
-            ) {
-                e.preventDefault();
-                insertComment('pcdate');
-                return;
-            }
-
-            // ALT + I
-            if (
-                e.altKey &&
-                !e.ctrlKey &&
-                !e.shiftKey &&
-                e.key.toLowerCase() === 'i'
-            ) {
-                e.preventDefault();
-                openSettings();
-                return;
-            }
-
-        },
-        true
-    );
-
-    if (!localStorage.getItem(INITIALS_KEY)) {
+        document.getElementById("editBadgeBtn").onclick =
+            function () {
+                openPopup(false);
+            };
 
         setTimeout(() => {
-            openSettings();
-        }, 500);
 
+            badge.style.transition =
+                "opacity .3s ease";
+
+            badge.style.opacity = "0";
+
+            setTimeout(() => {
+
+                if (badge.parentNode) {
+                    badge.remove();
+                }
+
+            }, 2000);
+
+        }, 2000);
     }
 
-    console.log('CMS AUTO COMMENT Loaded');
+    createBadge();
+
+    const cfg = getSettings();
+
+    if (!cfg.initials) {
+        openPopup(true);
+    } else {
+        setTimeout(insertComment, 0);
+    }
 
 })();
