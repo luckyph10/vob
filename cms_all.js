@@ -32,12 +32,10 @@
 
     function toast(message, color = '#00c853') {
 
-        const existing =
+        const old =
             document.getElementById('cms-toast');
 
-        if (existing) {
-            existing.remove();
-        }
+        if (old) old.remove();
 
         const div =
             document.createElement('div');
@@ -64,29 +62,19 @@
         document.body.appendChild(div);
 
         setTimeout(() => {
-
-            if (div.parentNode) {
-                div.remove();
-            }
-
+            if (div.parentNode) div.remove();
         }, 2000);
     }
 
     function openSettings() {
 
         const old =
-            document.getElementById(
-                'cms-settings'
-            );
+            document.getElementById('cms-settings');
 
-        if (old) {
-            old.remove();
-        }
+        if (old) old.remove();
 
         const saved =
-            localStorage.getItem(
-                INITIALS_KEY
-            ) || '';
+            localStorage.getItem(INITIALS_KEY) || '';
 
         const panel =
             document.createElement('div');
@@ -129,9 +117,10 @@
 
             <input
                 id="cms-initials"
-                value="${saved}"
-                placeholder="Enter Initials"
+                type="text"
                 maxlength="10"
+                placeholder="Enter Initials"
+                value="${saved}"
                 style="
                     width:100%;
                     padding:10px;
@@ -167,9 +156,7 @@
 
                 const initials =
                     document
-                        .getElementById(
-                            'cms-initials'
-                        )
+                        .getElementById('cms-initials')
                         .value
                         .trim()
                         .toUpperCase();
@@ -222,33 +209,26 @@
         if (!initials) {
 
             openSettings();
+
             return;
         }
 
         let comment = '';
 
-        // ALT + E
         if (type === 'eligible') {
 
             comment =
                 `Reviewed. Eligible. IDR Initiation document attached - ${getPHDate()} - ${initials}`;
 
-        }
-
-        // ALT + R
-        else if (type === 'noaction') {
+        } else if (type === 'noaction') {
 
             comment =
                 `Reviewed, no action required. - ${getPHDate()} - ${initials}`;
 
-        }
-
-        // ALT + Q
-        else if (type === 'pcdate') {
+        } else if (type === 'pcdate') {
 
             comment =
                 `Reviewed, no action required. - ${getPCDate()} - ${initials}`;
-
         }
 
         const existing =
@@ -257,9 +237,7 @@
         if (
             existing
                 .toLowerCase()
-                .includes(
-                    comment.toLowerCase()
-                )
+                .includes(comment.toLowerCase())
         ) {
 
             toast(
@@ -281,13 +259,10 @@
 
         const newValue =
             existing.trim()
-                ? comment +
-                  '\n\n' +
-                  existing
+                ? comment + '\n\n' + existing
                 : comment;
 
-        textarea.value =
-            newValue;
+        textarea.value = newValue;
 
         textarea.dispatchEvent(
             new Event('input', {
@@ -314,12 +289,9 @@
                 );
 
             } catch (e) {}
-
         });
 
-        toast(
-            '✓ Comment Added'
-        );
+        toast('✓ Comment Added');
     }
 
     document.addEventListener(
@@ -333,13 +305,8 @@
                 !e.shiftKey &&
                 e.key.toLowerCase() === 'e'
             ) {
-
                 e.preventDefault();
-
-                insertComment(
-                    'eligible'
-                );
-
+                insertComment('eligible');
                 return;
             }
 
@@ -350,13 +317,8 @@
                 !e.shiftKey &&
                 e.key.toLowerCase() === 'r'
             ) {
-
                 e.preventDefault();
-
-                insertComment(
-                    'noaction'
-                );
-
+                insertComment('noaction');
                 return;
             }
 
@@ -367,27 +329,20 @@
                 !e.shiftKey &&
                 e.key.toLowerCase() === 'q'
             ) {
-
                 e.preventDefault();
-
-                insertComment(
-                    'pcdate'
-                );
-
+                insertComment('pcdate');
                 return;
             }
 
-            // CTRL + ALT + I
+            // ALT + I
             if (
-                e.ctrlKey &&
                 e.altKey &&
+                !e.ctrlKey &&
+                !e.shiftKey &&
                 e.key.toLowerCase() === 'i'
             ) {
-
                 e.preventDefault();
-
                 openSettings();
-
                 return;
             }
 
@@ -395,8 +350,14 @@
         true
     );
 
-    console.log(
-        'CMS AUTO COMMENT Loaded'
-    );
+    if (!localStorage.getItem(INITIALS_KEY)) {
+
+        setTimeout(() => {
+            openSettings();
+        }, 500);
+
+    }
+
+    console.log('CMS AUTO COMMENT Loaded');
 
 })();
