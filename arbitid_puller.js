@@ -22,14 +22,15 @@
 
         const disputeStatus = statusElement.textContent.trim();
 
+        // Combine all App IDs into one cell
+        const appIdText = appIds.join(", ");
+
         // Excel format:
-        // B = App ID
-        // C = blank
-        // D = blank
-        // E = Dispute Status
-        const clipboardText = appIds
-            .map(id => `${id}\t\t\t${disputeStatus}`)
-            .join("\n");
+        // Column B = App IDs
+        // Column C = blank
+        // Column D = blank
+        // Column E = Dispute Status
+        const clipboardText = `${appIdText}\t\t\t${disputeStatus}`;
 
         await navigator.clipboard.writeText(clipboardText);
 
@@ -45,24 +46,18 @@
             border-radius:8px;
             font:14px Arial,sans-serif;
             box-shadow:0 4px 12px rgba(0,0,0,.3);
-            max-width:400px;
+            max-width:500px;
         `;
 
-        popup.innerHTML =
-            appIds.length === 1
-                ? `
-                    <b>✓ Copied App ID</b><br>
-                    ${appIds[0]}<br>
-                    Status: ${disputeStatus}
-                  `
-                : `
-                    <b>✓ Copied ${appIds.length} App IDs</b><br>
-                    Status: ${disputeStatus}
-                  `;
+        popup.innerHTML = `
+            <b>✓ Copied ${appIds.length} App ID${appIds.length > 1 ? 's' : ''}</b><br>
+            ${appIdText}<br>
+            Status: ${disputeStatus}
+        `;
 
         document.body.appendChild(popup);
 
-        setTimeout(() => popup.remove(), 4000);
+        setTimeout(() => popup.remove(), 5000);
 
     } catch (err) {
         console.error("arbitid_puller failed:", err);
