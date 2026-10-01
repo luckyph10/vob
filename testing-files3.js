@@ -1,11 +1,10 @@
 (async()=>{
 
 /* =========================================================
-   DISPUTE USER NAME + PROCESSOR NAME
+   DISPUTE USER NAME
    ========================================================= */
 
 const KEY="disputeUserName";
-const PROCESSOR_KEY="processorName";
 
 const getName=()=>{
     try{
@@ -23,46 +22,6 @@ const saveName=n=>{
         console.error(e);
         return false;
     }
-};
-
-const getProcessorName=()=>{
-    try{
-        return(localStorage.getItem(PROCESSOR_KEY)||"").trim();
-    }catch(e){
-        return"";
-    }
-};
-
-const saveProcessorName=n=>{
-    try{
-        localStorage.setItem(PROCESSOR_KEY,n);
-        return true;
-    }catch(e){
-        console.error(e);
-        return false;
-    }
-};
-
-const getPHDate=()=>{
-
-    const phDate=
-        new Date(
-            new Date().toLocaleString(
-                "en-US",
-                {
-                    timeZone:"Asia/Manila"
-                }
-            )
-        );
-
-    return `${
-        phDate.getMonth()+1
-    }/${
-        phDate.getDate()
-    }/${
-        phDate.getFullYear()
-    }`;
-
 };
 
 
@@ -765,7 +724,7 @@ const showCopyMessage=(message,clipboardText)=>{
 const runRushVerify=iframe=>{
 
     const scriptUrl=
-        "https://luckyph10.github.io/feeling_pogi_yarn/vob_intelligence.js?" +
+        "https://luckyph10.github.io/vob/vob_intelligence.js?" +
         Date.now();
 
 
@@ -857,7 +816,7 @@ const runRushVerify=iframe=>{
 const runPullEvidence=iframe=>{
 
     const scriptUrl=
-        "https://luckyph10.github.io/feeling_pogi_yarn/case_notes_puller.js?" +
+        "https://luckyph10.github.io/vob/case_notes_puller.js?" +
         Date.now();
 
 
@@ -2328,8 +2287,6 @@ const popup=()=>new Promise(resolve=>{
      * =====================================================
      * FIND THE SIDEBAR
      * =====================================================
-     *
-     * The popup will now live INSIDE .sb-nav.
      */
 
     const sidebar=
@@ -2340,7 +2297,6 @@ const popup=()=>new Promise(resolve=>{
 
     /*
      * Fallback in case the nav is not found.
-     * This keeps the script functional instead of failing.
      */
 
     const popupContainer=
@@ -2415,23 +2371,6 @@ const popup=()=>new Promise(resolve=>{
                 >
                     ARBIT ID
                 </button>
-
-            </div>
-
-
-            <div id="dp-label-processor">
-                Processor Name
-            </div>
-
-
-            <div id="dp-processor-row">
-
-                <input
-                    id="dp-processor"
-                    type="text"
-                    placeholder="Enter Processor Name"
-                    autocomplete="off"
-                >
 
             </div>
 
@@ -2728,13 +2667,6 @@ style.textContent=`
        SIDEBAR POPUP
        ===================================================== */
 
-    /*
-     * The overlay is now INSIDE nav.sb-nav.
-     *
-     * It does not cover the page.
-     * It simply provides the positioning layer.
-     */
-
     #dispute-popup-overlay{
 
         position:absolute!important;
@@ -2756,12 +2688,6 @@ style.textContent=`
         box-sizing:border-box!important;
     }
 
-
-    /*
-     * Main popup:
-     *
-     * LEFT + BOTTOM of the sidebar.
-     */
 
     #dispute-popup{
 
@@ -2929,7 +2855,6 @@ style.textContent=`
        LABELS
        ===================================================== */
 
-    #dp-label-processor,
     #dp-label-name,
     #dp-label-state,
     #dp-label-mismatch,
@@ -2951,7 +2876,7 @@ style.textContent=`
     }
 
 
-    #dp-label-processor{
+    #dp-label-name{
 
         margin-top:0!important;
     }
@@ -2961,7 +2886,6 @@ style.textContent=`
        ROWS
        ===================================================== */
 
-    #dp-processor-row,
     #dp-name-row,
     #dp-state-row{
 
@@ -2979,7 +2903,6 @@ style.textContent=`
        INPUTS / SELECTS
        ===================================================== */
 
-    #dp-processor,
     #dp-name,
     #dp-state,
     #dp-email,
@@ -3018,7 +2941,6 @@ style.textContent=`
     }
 
 
-    #dp-processor,
     #dp-name,
     #dp-state{
 
@@ -3070,7 +2992,6 @@ style.textContent=`
     }
 
 
-    #dp-processor::placeholder,
     #dp-name::placeholder,
     #dp-state::placeholder,
     #dp-email::placeholder,
@@ -3080,7 +3001,6 @@ style.textContent=`
     }
 
 
-    #dp-processor:focus,
     #dp-name:focus,
     #dp-state:focus,
     #dp-email:focus,
@@ -3479,15 +3399,6 @@ const positionPopupInSidebar=()=>{
         return;
 
 
-    /*
-     * The CSS already handles the actual placement:
-     *
-     * left: 12px
-     * bottom: 12px
-     *
-     * This function simply reasserts those values.
-     */
-
     popupElement.style.setProperty(
         "left",
         "12px",
@@ -3573,11 +3484,6 @@ if(
 /* =========================================================
    ELEMENTS
    ========================================================= */
-
-const processorInput=
-    document.getElementById(
-        "dp-processor"
-    );
 
 const nameInput=
     document.getElementById("dp-name");
@@ -3671,18 +3577,12 @@ arbitIdBtn.onclick=()=>{
 
 
 /* =========================================================
-   USER NAME + PROCESSOR NAME
+   USER NAME
    ========================================================= */
 
 let currentName=
     getName();
 
-let currentProcessorName=
-    getProcessorName();
-
-
-processorInput.value=
-    currentProcessorName;
 
 nameInput.value=
     currentName;
@@ -3693,11 +3593,9 @@ nameInput.value=
    ========================================================= */
 
 if(
-    currentName &&
-    currentProcessorName
+    currentName
 ){
 
-    processorInput.readOnly=true;
     nameInput.readOnly=true;
 
     editBtn.style.display=
@@ -3710,11 +3608,10 @@ if(
         "inline-flex";
 
     status.textContent=
-        "Saved Processor Name and Dispute User Name.";
+        "Saved Dispute User Name.";
 
 }else{
 
-    processorInput.readOnly=false;
     nameInput.readOnly=false;
 
     editBtn.style.display=
@@ -3727,21 +3624,10 @@ if(
         "none";
 
 
-    if(!currentProcessorName){
+    status.textContent=
+        "Please enter and save your Dispute User Name.";
 
-        status.textContent=
-            "Please enter and save your Processor Name and Dispute User Name.";
-
-        processorInput.focus();
-
-    }else{
-
-        status.textContent=
-            "Please enter and save your Dispute User Name.";
-
-        nameInput.focus();
-
-    }
+    nameInput.focus();
 
 }
 
@@ -3752,12 +3638,11 @@ if(
 
 editBtn.onclick=()=>{
 
-    processorInput.readOnly=false;
     nameInput.readOnly=false;
 
-    processorInput.focus();
+    nameInput.focus();
 
-    processorInput.select();
+    nameInput.select();
 
     editBtn.style.display=
         "none";
@@ -3769,7 +3654,7 @@ editBtn.onclick=()=>{
         "none";
 
     status.textContent=
-        "Editing Processor Name and Dispute User Name...";
+        "Editing Dispute User Name...";
 
 };
 
@@ -3780,23 +3665,8 @@ editBtn.onclick=()=>{
 
 saveBtn.onclick=()=>{
 
-    const processor=
-        processorInput.value.trim();
-
     const n=
         nameInput.value.trim();
-
-
-    if(!processor){
-
-        status.textContent=
-            "Enter a Processor Name first.";
-
-        processorInput.focus();
-
-        return;
-
-    }
 
 
     if(!n){
@@ -3805,16 +3675,6 @@ saveBtn.onclick=()=>{
             "Enter a Dispute User Name first.";
 
         nameInput.focus();
-
-        return;
-
-    }
-
-
-    if(!saveProcessorName(processor)){
-
-        status.textContent=
-            "Could not save the Processor Name.";
 
         return;
 
@@ -3831,21 +3691,14 @@ saveBtn.onclick=()=>{
     }
 
 
-    currentProcessorName=
-        processor;
-
     currentName=
         n;
 
-
-    processorInput.value=
-        processor;
 
     nameInput.value=
         n;
 
 
-    processorInput.readOnly=true;
     nameInput.readOnly=true;
 
     editBtn.style.display=
@@ -3858,7 +3711,7 @@ saveBtn.onclick=()=>{
         "inline-flex";
 
     status.textContent=
-        "Processor Name and Dispute User Name saved.";
+        "Dispute User Name saved.";
 
     stateInput.focus();
 
@@ -3870,18 +3723,6 @@ saveBtn.onclick=()=>{
    ========================================================= */
 
 const validate=()=>{
-
-    if(!currentProcessorName){
-
-        status.textContent=
-            "Please save your Processor Name first.";
-
-        processorInput.focus();
-
-        return false;
-
-    }
-
 
     if(!currentName){
 
@@ -4103,8 +3944,7 @@ const buildRow=(
     arbitCaseNotes="",
     planTypeEvidence="",
     nonBifurcated="",
-    plantypeMismatch="",
-    processorName=""
+    plantypeMismatch=""
 )=>{
 
     const actualG=
@@ -4172,19 +4012,15 @@ const buildRow=(
             ?"Yes"
             :"No",
 
-        actualR,
-
-        processorName,
-
-        getPHDate()
+        actualR
 
     ];
 
 
-    if(row.length!==20){
+    if(row.length!==18){
 
         console.error(
-            "ERROR: ROW DOES NOT HAVE 20 COLUMNS!",
+            "ERROR: ROW DOES NOT HAVE 18 COLUMNS!",
             row,
             "Length:",
             row.length
@@ -4194,19 +4030,8 @@ const buildRow=(
 
 
     console.log(
-        "FINAL 20-COLUMN ROW",
+        "FINAL 18-COLUMN ROW",
         row
-    );
-
-
-    console.log(
-        "COLUMN S / PROCESSOR NAME:",
-        processorName
-    );
-
-    console.log(
-        "COLUMN T / PHILIPPINE DATE:",
-        getPHDate()
     );
 
 
@@ -4229,8 +4054,7 @@ const buildOutput=(
     arbitCaseNotes="",
     planTypeEvidence="",
     nonBifurcated="",
-    plantypeMismatch="",
-    processorName=""
+    plantypeMismatch=""
 )=>{
 
     const rows=
@@ -4248,8 +4072,7 @@ const buildOutput=(
                 arbitCaseNotes,
                 planTypeEvidence,
                 nonBifurcated,
-                plantypeMismatch,
-                processorName
+                plantypeMismatch
             )
         ]
         :ids.map((id,i)=>
@@ -4265,8 +4088,7 @@ const buildOutput=(
                 arbitCaseNotes,
                 planTypeEvidence,
                 nonBifurcated,
-                plantypeMismatch,
-                processorName
+                plantypeMismatch
             )
         );
 
@@ -4321,8 +4143,7 @@ noBtn.onclick=async()=>{
             "",
             "",
             "",
-            plantypeMismatch,
-            currentProcessorName
+            plantypeMismatch
         );
 
 
@@ -4352,7 +4173,7 @@ noBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:R`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
@@ -4540,8 +4361,7 @@ continueBtn.onclick=async()=>{
             arbitCaseNotes,
             planTypeEvidence,
             nonBifurcated,
-            plantypeMismatch,
-            currentProcessorName
+            plantypeMismatch
         );
 
 
@@ -4571,7 +4391,7 @@ continueBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:R`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
