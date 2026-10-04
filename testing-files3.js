@@ -4002,25 +4002,45 @@ const buildRow=(
 
         "N/A",
 
+        /*
+         * NEW COLUMN O
+         *
+         * The spreadsheet now has a new column O.
+         * Therefore State moves from O -> P.
+         */
+        "",
+
+        /*
+         * P -> Q
+         * Non-Bifurcated state/Federal
+         */
         stateValue,
 
         isYes
             ?nonBifurcated
             :"-",
 
+        /*
+         * Q -> R
+         * Eligibility Yes / No
+         */
         isYes
             ?"Yes"
             :"No",
 
+        /*
+         * R -> S
+         * Notes
+         */
         actualR
 
     ];
 
 
-    if(row.length!==18){
+    if(row.length!==19){
 
         console.error(
-            "ERROR: ROW DOES NOT HAVE 18 COLUMNS!",
+            "ERROR: ROW DOES NOT HAVE 19 COLUMNS!",
             row,
             "Length:",
             row.length
@@ -4030,7 +4050,7 @@ const buildRow=(
 
 
     console.log(
-        "FINAL 18-COLUMN ROW",
+        "FINAL 19-COLUMN ROW",
         row
     );
 
@@ -4173,7 +4193,7 @@ noBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:R`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:S`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
@@ -4391,7 +4411,7 @@ continueBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:R`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:S`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
