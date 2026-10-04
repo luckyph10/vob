@@ -3964,63 +3964,87 @@ const buildRow=(
 
     const row=[
 
+        /* A */
         isYes
             ?email
             :"-",
 
+        /* B */
         getPlanType(i),
 
+        /* C */
         plantypeMismatch,
 
+        /* D */
         duplicateComments,
 
+        /* E */
         disputeNumber,
 
+        /* F */
         id,
 
+        /* G */
         actualG,
 
+        /* H */
         isYes
             ?disputeUserName
             :"-",
 
+        /* I */
         isYes
             ?verificationStatus
             :"-",
 
+        /* J */
         isYes
             ?arbitCaseNotes
             :"-",
 
+        /* K */
         isYes
             ?planTypeEvidence
             :"-",
 
+        /* L */
         actualL,
 
+        /* M */
         "N/A",
 
+        /* N */
         "N/A",
 
+        /*
+         * O
+         * DEFAULT VALUE
+         */
+        "N/A",
+
+        /* P */
         stateValue,
 
+        /* Q */
         isYes
             ?nonBifurcated
             :"-",
 
+        /* R */
         isYes
             ?"Yes"
             :"No",
 
+        /* S */
         actualR
 
     ];
 
 
-    if(row.length!==18){
+    if(row.length!==19){
 
         console.error(
-            "ERROR: ROW DOES NOT HAVE 18 COLUMNS!",
+            "ERROR: ROW DOES NOT HAVE 19 COLUMNS!",
             row,
             "Length:",
             row.length
@@ -4030,7 +4054,7 @@ const buildRow=(
 
 
     console.log(
-        "FINAL 18-COLUMN ROW",
+        "FINAL 19-COLUMN ROW",
         row
     );
 
@@ -4173,7 +4197,7 @@ noBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:R`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:S`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
@@ -4391,7 +4415,7 @@ continueBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:R`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:S`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
