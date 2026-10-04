@@ -3964,74 +3964,78 @@ const buildRow=(
 
     const row=[
 
+        /* A */
         isYes
             ?email
             :"-",
 
+        /* B */
         getPlanType(i),
 
+        /* C */
         plantypeMismatch,
 
+        /* D */
         duplicateComments,
 
+        /* E */
         disputeNumber,
 
+        /* F */
         id,
 
+        /* G */
         actualG,
 
+        /* H */
         isYes
             ?disputeUserName
             :"-",
 
+        /* I */
         isYes
             ?verificationStatus
             :"-",
 
+        /* J */
         isYes
             ?arbitCaseNotes
             :"-",
 
+        /* K */
         isYes
             ?planTypeEvidence
             :"-",
 
+        /* L */
         actualL,
 
+        /* M */
         "N/A",
 
+        /* N */
         "N/A",
 
         /*
-         * NEW COLUMN O
-         *
-         * The spreadsheet now has a new column O.
-         * Therefore State moves from O -> P.
+         * O
+         * DEFAULT VALUE
          */
-        "",
+        "N/A",
 
-        /*
-         * P -> Q
-         * Non-Bifurcated state/Federal
-         */
+        /* P */
         stateValue,
 
+        /* Q */
         isYes
             ?nonBifurcated
             :"-",
 
-        /*
-         * Q -> R
-         * Eligibility Yes / No
-         */
+        /* R */
         isYes
             ?"Yes"
             :"No",
 
-        /*
-         * R -> S
-         * Notes
-         */
+        /* S */
         actualR
 
     ];
