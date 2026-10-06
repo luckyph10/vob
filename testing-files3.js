@@ -1,6 +1,21 @@
 (async function () {
     try {
-        let clipboardText = await navigator.clipboard.readText();
+        let clipboardText = "";
+
+        // Try reading from clipboard
+        try {
+            clipboardText = await navigator.clipboard.readText();
+        } catch (clipboardError) {
+            console.warn("Clipboard access was blocked. Please paste your IDs below.");
+
+            clipboardText = prompt("Paste your App IDs / Dispute IDs here:");
+
+            if (clipboardText === null) {
+                console.error("No IDs were provided.");
+                return;
+            }
+        }
+
         clipboardText = clipboardText.trim();
 
         // Remove surrounding quotes
@@ -24,6 +39,10 @@
 
         // Remove duplicate IDs while preserving original order
         const uniqueItems = [...new Set(items)];
+
+        console.log("IDs found:", items.length);
+        console.log("Unique IDs:", uniqueItems.length);
+        console.log(uniqueItems);
 
         // Convert an ID into its URL
         function getUrl(item) {
@@ -52,6 +71,8 @@
             console.error("No valid App IDs or Dispute IDs found.");
             return;
         }
+
+        console.log("Opening:", urls.map(x => x.item));
 
         // First ID → current tab
         window.location.href = urls[0].url;
