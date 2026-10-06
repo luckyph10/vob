@@ -48,7 +48,7 @@ Mode: global
     {
       "username": "luis",
       "key": "LUIS001",
-      "enabled": false
+      "enabled": true
     },
     {
       "username": "maylen",
