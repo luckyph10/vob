@@ -10,7 +10,7 @@
 
         if (!ids.length) return;
 
-        await navigator.clipboard.writeText(ids.join(','));
+        await navigator.clipboard.writeText(ids.join(', '));
 
         const popup = document.createElement('div');
         popup.innerHTML = `
