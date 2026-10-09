@@ -33,7 +33,7 @@
             position:fixed;
             top:20px;
             right:20px;
-            background:#dc2626;
+            background:#1e3a8a;
             color:#fff;
             padding:12px 18px;
             border-radius:8px;
@@ -50,7 +50,7 @@
     overlay.style.cssText = `
         position:fixed;
         inset:0;
-        background:rgba(0,0,0,.55);
+        background:rgba(0,0,0,.7);
         z-index:999999;
         display:flex;
         align-items:center;
@@ -67,13 +67,15 @@
 
         return `
             <div style="
-                border:1px solid #e5e7eb;
+                border:1px solid #334155;
                 border-radius:10px;
                 margin-bottom:12px;
                 overflow:hidden;
+                background:#111827;
             ">
                 <div style="
-                    background:#f3f4f6;
+                    background:#1e3a5f;
+                    color:white;
                     padding:10px;
                     font-weight:bold;
                 ">
@@ -87,24 +89,26 @@
                     white-space:pre-wrap;
                     word-break:break-word;
                     font-size:13px;
+                    color:white;
                 ">
                     ${ids.join(", ")}
                 </div>
 
                 <div style="
                     padding:10px;
-                    border-top:1px solid #e5e7eb;
+                    border-top:1px solid #334155;
                 ">
                     <button
                         class="ald-copy-group"
                         data-ids="${ids.join(", ")}"
                         style="
-                            background:#2563eb;
+                            background:#1d4ed8;
                             color:white;
                             border:none;
                             padding:8px 12px;
                             border-radius:6px;
                             cursor:pointer;
+                            font-weight:bold;
                         ">
                         Copy IDs
                     </button>
@@ -115,23 +119,29 @@
 
     overlay.innerHTML = `
         <div style="
-            background:white;
-            width:800px;
+            background:#0f172a;
+            color:white;
+            width:850px;
             max-width:95%;
             max-height:85vh;
             overflow:auto;
             border-radius:12px;
             padding:16px;
-            box-shadow:0 6px 25px rgba(0,0,0,.3);
+            box-shadow:0 6px 25px rgba(0,0,0,.4);
+            border:1px solid #334155;
         ">
 
-            <h2 style="margin-top:0;">
+            <h2 style="
+                margin-top:0;
+                color:white;
+            ">
                 Issue App ID Puller
             </h2>
 
             <div style="
-                margin-bottom:12px;
-                color:#555;
+                margin-bottom:15px;
+                color:#cbd5e1;
+                font-size:14px;
             ">
                 Issues Found: ${issueNames.length}
                 <br>
@@ -141,25 +151,27 @@
             <div style="margin-bottom:15px;">
                 <button id="aldCopyAll"
                     style="
-                        background:#16a34a;
+                        background:#2563eb;
                         color:white;
                         border:none;
                         padding:10px 14px;
                         border-radius:6px;
                         cursor:pointer;
                         margin-right:8px;
+                        font-weight:bold;
                     ">
                     Copy All IDs
                 </button>
 
                 <button id="aldClose"
                     style="
-                        background:#6b7280;
+                        background:#334155;
                         color:white;
                         border:none;
                         padding:10px 14px;
                         border-radius:6px;
                         cursor:pointer;
+                        font-weight:bold;
                     ">
                     Close
                 </button>
@@ -192,12 +204,13 @@
                 position:fixed;
                 top:20px;
                 right:20px;
-                background:#16a34a;
+                background:#1e3a8a;
                 color:white;
                 padding:12px 18px;
                 border-radius:8px;
                 z-index:1000000;
                 font-family:Arial;
+                box-shadow:0 4px 10px rgba(0,0,0,.3);
             `;
 
             document.body.appendChild(popup);
@@ -228,12 +241,13 @@
             position:fixed;
             top:20px;
             right:20px;
-            background:#16a34a;
+            background:#1e3a8a;
             color:white;
             padding:12px 18px;
             border-radius:8px;
             z-index:1000000;
             font-family:Arial;
+            box-shadow:0 4px 10px rgba(0,0,0,.3);
         `;
 
         document.body.appendChild(popup);
