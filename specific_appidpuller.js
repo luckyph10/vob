@@ -12,83 +12,114 @@
 
     const overlay = document.createElement("div");
     overlay.id = "aldMissingIdFinder";
+
     overlay.style.cssText = `
         position:fixed;
         inset:0;
-        background:rgba(0,0,0,.5);
+        background:rgba(0,0,0,.55);
+        backdrop-filter:blur(4px);
         z-index:999999;
         display:flex;
         align-items:center;
         justify-content:center;
-        font-family:Arial,sans-serif;
+        font-family:Segoe UI,Arial,sans-serif;
     `;
 
     overlay.innerHTML = `
         <div style="
-            background:#fff;
-            width:550px;
-            max-width:90%;
-            border-radius:12px;
-            padding:16px;
-            box-shadow:0 6px 20px rgba(0,0,0,.3);
+            width:650px;
+            max-width:95%;
+            border-radius:14px;
+            padding:18px;
+            background:rgba(10,25,50,.92);
+            border:1px solid rgba(59,130,246,.35);
+            box-shadow:0 0 25px rgba(59,130,246,.25);
+            color:#fff;
         ">
-            <h3 style="margin:0 0 10px 0;">
+            <h2 style="
+                margin:0 0 8px 0;
+                color:#60a5fa;
+            ">
                 Missing Arbit ID Finder
-            </h3>
+            </h2>
 
-            <p style="margin-bottom:10px;font-size:13px;color:#555;">
-                Paste IDs you already have from Excel.
-            </p>
+            <div style="
+                font-size:13px;
+                color:#cbd5e1;
+                margin-bottom:12px;
+            ">
+                Paste your Excel App IDs below.
+            </div>
 
-            <textarea id="aldExistingIds"
+            <textarea
+                id="aldExistingIds"
                 style="
                     width:100%;
                     height:180px;
                     resize:vertical;
-                    padding:8px;
+                    padding:10px;
                     box-sizing:border-box;
-                    border:1px solid #ccc;
-                    border-radius:6px;
+                    border-radius:8px;
+                    border:1px solid #3b82f6;
+                    background:#0f172a;
+                    color:white;
+                    font-size:13px;
                 "
-                placeholder="Example:
-
-2716285
+                placeholder="2716285
 2716422
-2717725
-2718713
-2719731"></textarea>
+2717725"></textarea>
 
-            <div style="margin-top:12px;display:flex;gap:8px;">
-                <button id="aldFindBtn"
-                    style="
-                        background:#2563eb;
-                        color:#fff;
-                        border:none;
-                        padding:10px 14px;
-                        border-radius:6px;
-                        cursor:pointer;
-                    ">
-                    Find Missing IDs
+            <div style="
+                margin-top:12px;
+                display:flex;
+                gap:8px;
+                flex-wrap:wrap;
+            ">
+                <button id="aldFindBtn" style="
+                    background:#2563eb;
+                    color:white;
+                    border:none;
+                    padding:10px 16px;
+                    border-radius:8px;
+                    cursor:pointer;
+                    font-weight:600;
+                ">
+                    Process IDs
                 </button>
 
-                <button id="aldCloseBtn"
-                    style="
-                        background:#6b7280;
-                        color:#fff;
-                        border:none;
-                        padding:10px 14px;
-                        border-radius:6px;
-                        cursor:pointer;
-                    ">
+                <button id="aldCopyBtn" style="
+                    background:#16a34a;
+                    color:white;
+                    border:none;
+                    padding:10px 16px;
+                    border-radius:8px;
+                    cursor:pointer;
+                    font-weight:600;
+                ">
+                    Copy Missing IDs
+                </button>
+
+                <button id="aldCloseBtn" style="
+                    background:#475569;
+                    color:white;
+                    border:none;
+                    padding:10px 16px;
+                    border-radius:8px;
+                    cursor:pointer;
+                    font-weight:600;
+                ">
                     Close
                 </button>
             </div>
 
             <div id="aldResult"
                 style="
-                    margin-top:12px;
-                    font-size:13px;
+                    margin-top:14px;
+                    max-height:350px;
+                    overflow:auto;
                     white-space:pre-wrap;
+                    font-size:13px;
+                    color:#e2e8f0;
                 ">
             </div>
         </div>
@@ -96,70 +127,125 @@
 
     document.body.appendChild(overlay);
 
+    let latestMissingIds = [];
+
     document.getElementById("aldCloseBtn").onclick = () => {
         overlay.remove();
     };
 
-    document.getElementById("aldFindBtn").onclick = async () => {
+    document.getElementById("aldFindBtn").onclick = () => {
 
-        const pasted = document
-            .getElementById("aldExistingIds")
-            .value;
+        const pasted =
+            document.getElementById("aldExistingIds").value;
 
-        const existingIds = new Set(
-            (pasted.match(/\d+/g) || [])
-        );
+        const pastedIds =
+            (pasted.match(/\d+/g) || []);
 
-        const missingIds = pageIds.filter(
-            id => !existingIds.has(id)
-        );
+        const existingIds =
+            new Set(pastedIds);
 
-        const resultText = missingIds.join(", ");
+        const missingIds =
+            pageIds.filter(
+                id => !existingIds.has(id)
+            );
 
-        await navigator.clipboard.writeText(resultText);
+        latestMissingIds = missingIds;
+
+        const foundIds =
+            pastedIds.filter(
+                id => pageIds.includes(id)
+            );
+
+        const notOnPageIds =
+            pastedIds.filter(
+                id => !pageIds.includes(id)
+            );
 
         document.getElementById("aldResult").innerHTML = `
-            <b>Found on Page:</b> ${pageIds.length}<br>
-            <b>Already Have:</b> ${existingIds.size}<br>
-            <b>Missing:</b> ${missingIds.length}<br><br>
-            ✅ Copied to Clipboard:<br>
             <div style="
-                margin-top:6px;
+                background:rgba(15,23,42,.8);
+                padding:12px;
+                border-radius:8px;
+                border:1px solid rgba(59,130,246,.25);
+            ">
+
+            <b style="color:#60a5fa">Summary</b><br><br>
+
+            <b>IDs Found On Page:</b> ${pageIds.length}<br>
+            <b>IDs You Pasted:</b> ${existingIds.size}<br>
+            <b>Missing IDs:</b> ${missingIds.length}<br>
+            <b>Your IDs Found On Page:</b> ${foundIds.length}<br>
+            <b>Your IDs NOT On Page:</b> ${notOnPageIds.length}
+
+            <hr style="margin:10px 0;border-color:#334155;">
+
+            <b style="color:#22c55e">
+                IDs Found On Page From Your List
+            </b>
+            <div style="
+                margin-top:4px;
                 padding:8px;
-                background:#f3f4f6;
+                background:#0f172a;
                 border-radius:6px;
                 word-break:break-word;
             ">
-                ${resultText || "No missing IDs found"}
+                ${foundIds.length
+                    ? foundIds.join(", ")
+                    : "None"}
+            </div>
+
+            <br>
+
+            <b style="color:#f87171">
+                IDs In Your List But NOT On This Page
+            </b>
+            <div style="
+                margin-top:4px;
+                padding:8px;
+                background:#0f172a;
+                border-radius:6px;
+                word-break:break-word;
+            ">
+                ${notOnPageIds.length
+                    ? notOnPageIds.join(", ")
+                    : "None"}
+            </div>
+
+            <br>
+
+            <b style="color:#fbbf24">
+                Missing IDs (Present On Page But Not In Your List)
+            </b>
+            <div style="
+                margin-top:4px;
+                padding:8px;
+                background:#0f172a;
+                border-radius:6px;
+                word-break:break-word;
+            ">
+                ${missingIds.length
+                    ? missingIds.join(", ")
+                    : "No missing IDs found"}
+            </div>
+
             </div>
         `;
-
-        if (missingIds.length > 0) {
-            setTimeout(() => {
-                if (document.getElementById("aldMissingIdFinder")) {
-                    overlay.remove();
-                }
-
-                const popup = document.createElement("div");
-                popup.innerHTML =
-                    `📋 Copied ${missingIds.length} Missing Arbit ID${missingIds.length > 1 ? "s" : ""}`;
-
-                popup.style.cssText = `
-                    position:fixed;
-                    top:20px;
-                    right:20px;
-                    background:#16a34a;
-                    color:white;
-                    padding:12px 18px;
-                    border-radius:8px;
-                    z-index:999999;
-                    box-shadow:0 4px 10px rgba(0,0,0,.3);
-                `;
-
-                document.body.appendChild(popup);
-
-                setTimeout(() => popup.remove(), 2000);
-            }, 5000);
-        }
     };
+
+    document.getElementById("aldCopyBtn").onclick = async () => {
+
+        if (!latestMissingIds.length) {
+            alert("No missing IDs to copy. Run Process IDs first.");
+            return;
+        }
+
+        await navigator.clipboard.writeText(
+            latestMissingIds.join(", ")
+        );
+
+        alert(
+            `Copied ${latestMissingIds.length} Missing ID(s) to clipboard.`
+        );
+    };
+
 })();
