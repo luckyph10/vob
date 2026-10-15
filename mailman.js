@@ -1,13 +1,6 @@
 (async function () {
 
-    let disputeId = "";
-
-    try {
-        disputeId = (await navigator.clipboard.readText()).trim();
-    } catch (e) {
-        alert("Cannot read clipboard");
-        return;
-    }
+    const disputeId = (await navigator.clipboard.readText()).trim();
 
     if (!disputeId) {
         alert("Clipboard is empty");
@@ -23,22 +16,17 @@
         return;
     }
 
-    // Clear existing value
     input.focus();
-    input.value = "";
-
-    // Set clipboard value
     input.value = disputeId;
 
-    // Trigger React/UI updates
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));
 
-    // Small delay before searching
     setTimeout(() => {
 
-        const searchBtn = [...document.querySelectorAll("button")]
-            .find(btn => btn.textContent.trim().includes("Search"));
+        const searchBtn = document.querySelector(
+            'button[title="Search"]'
+        );
 
         if (!searchBtn) {
             alert("Search button not found");
@@ -47,8 +35,9 @@
 
         searchBtn.click();
 
-        console.log("Searching dispute:", disputeId);
+        console.log("Searched:", disputeId);
 
     }, 500);
 
 })();
+`
