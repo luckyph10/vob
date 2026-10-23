@@ -4060,23 +4060,21 @@ const buildRow=(
 
     if(row.length!==20)
 
-        console.error(
-            "ERROR: ROW DOES NOT HAVE 20 COLUMNS!",
-            row,
-            "Length:",
-            row.length
-        );
-
-    }
-
-
-    console.log(
-        "FINAL 20-COLUMN ROW",
-        row
+    console.error(
+        "ERROR: ROW DOES NOT HAVE 20 COLUMNS!",
+        row,
+        "Length:",
+        row.length
     );
 
+}
 
-    return row.join("\t");
+console.log(
+    "FINAL 20-COLUMN ROW",
+    row
+);
+
+return row.join("\t");
 
 };
 
