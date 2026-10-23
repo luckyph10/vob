@@ -149,7 +149,17 @@ const columnKPageValue=
         ?.textContent?.trim()
     ||
     "";
+/* =========================================================
+   GET PAGE VALUE FOR NEW COLUMN B
+   ========================================================= */
 
+const newColumnBValue =
+    document.querySelector(
+        '#ngForm > fieldset > div > div:nth-child(1) > div:nth-child(5) > ng-select > div > div > div.ng-value > span.ng-value-label'
+    )
+    ?.textContent
+    ?.trim()
+    || "";
 
 /* =========================================================
    GET IDS
@@ -1129,66 +1139,81 @@ const buildRow=(
 
     const row=[
 
-        /* A */
-        isYes?email:"-",
+    /* A */
+    isYes
+        ? email
+        : "-",
 
-        /* B — NEW COLUMN */
-        columnBValue,
+    /* B */
+    newColumnBValue,
 
-        /* C — PREVIOUSLY B */
-        getPlanType(i),
+    /* C */
+    getPlanType(i),
 
-        /* D — PREVIOUSLY C */
-        plantypeMismatch,
+    /* D */
+    plantypeMismatch,
 
-        /* E — PREVIOUSLY D */
-        duplicateComments,
+    /* E */
+    duplicateComments,
 
-        /* F — PREVIOUSLY E */
-        disputeNumber,
+    /* F */
+    disputeNumber,
 
-        /* G — PREVIOUSLY F */
-        id,
+    /* G */
+    id,
 
-        /* H — PREVIOUSLY G */
-        actualG,
+    /* H */
+    actualG,
 
-        /* I — PREVIOUSLY H */
-        isYes?disputeUserName:"-",
+    /* I */
+    isYes
+        ? disputeUserName
+        : "-",
 
-        /* J — PREVIOUSLY I */
-        isYes?verificationStatus:"-",
+    /* J */
+    isYes
+        ? verificationStatus
+        : "-",
 
-        /* K — PREVIOUSLY J */
-        isYes?arbitCaseNotes:"-",
+    /* K */
+    isYes
+        ? arbitCaseNotes
+        : "-",
 
-        /* L — PREVIOUSLY K */
-        isYes?planTypeEvidence:"-",
+    /* L */
+    isYes
+        ? planTypeEvidence
+        : "-",
 
-        /* M — PREVIOUSLY L */
-        actualL,
+    /* M */
+    actualL,
 
-        /* N — PREVIOUSLY M */
-        "N/A",
+    /* N */
+    "N/A",
 
-        /* O — PREVIOUSLY N */
-        "N/A",
+    /* O */
+    "N/A",
 
-        /* P — PREVIOUSLY O */
-        "N/A",
+    /* P */
+    "N/A",
 
-        /* Q — PREVIOUSLY P */
-        stateValue,
+    /* Q */
+    stateValue,
 
-        /* R — PREVIOUSLY Q */
-        isYes?nonBifurcated:"-",
+    /* R */
+    isYes
+        ? nonBifurcated
+        : "-",
 
-        /* S — PREVIOUSLY R */
-        isYes?"Yes":"No",
+    /* S */
+    isYes
+        ? "Yes"
+        : "No",
 
-        /* T — PREVIOUSLY S */
-        actualR
-    ];
+    /* T */
+    actualR
+
+];
 
     if(row.length!==20){
         console.error(
