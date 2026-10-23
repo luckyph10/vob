@@ -1,5 +1,4 @@
 (async()=>{
-try {
 
 /* =========================================================
    DISPUTE USER NAME
@@ -134,20 +133,20 @@ const columnKPageValue=
 
 
    /* =========================================================
-   NEW COLUMN B VALUE
+   GET NEW COLUMN B VALUE
    ========================================================= */
 
-const newColumnBValue =
+const newColumnBElement=
     document.querySelector(
         '#ngForm > fieldset > div > div:nth-child(1) > div:nth-child(5) > ng-select > div > div > div.ng-value > span.ng-value-label'
-    )
-    ?.textContent
-    ?.trim()
-    || "";
+    );
 
-console.log("newColumnBValue =", newColumnBValue);
-
-   
+const newColumnBValue=
+    newColumnBElement
+        ?.textContent
+        ?.trim()
+    ||
+    "";
 
 
 /* =========================================================
@@ -288,40 +287,28 @@ const arbitIdNumber =
    VALIDATION
    ========================================================= */
 
+if(
+    !disputeNumber||
+    !disputeStatus||
+    !ids.length
+){
 
-/* =========================================================
-   VALIDATION — DO NOT EXIT BEFORE SHOWING THE POPUP
-   ========================================================= */
-
-const missingPageData = [];
-
-if (!disputeNumber) {
-    missingPageData.push("Dispute Number");
-}
-
-if (!disputeStatus) {
-    missingPageData.push("Dispute Status");
-}
-
-if (!ids.length) {
-    missingPageData.push("ARBIT / APP IDs");
-}
-
-if (missingPageData.length) {
-    console.warn(
-        "Some page data could not be found. The popup will still open.",
+    console.error(
+        "Missing required page data.",
         {
-            missingPageData,
             disputeNumber,
             disputeStatus,
-            columnJValue,
-            columnKPageValue,
-            newColumnBValue,
             ids,
-            arbitLinks,
-            pageUrl: location.href
+            arbitLinks
         }
     );
+
+    alert(
+        "Unable to continue.\n\n"+
+        "Missing Dispute Number, Dispute Status, or IDs."
+    );
+
+    return;
 }
 
 
@@ -355,6 +342,11 @@ console.log(
 console.log(
     "Page K value:",
     columnKPageValue
+);
+
+console.log(
+    "New Column B Value:",
+    newColumnBValue
 );
 
 console.log(
@@ -3752,31 +3744,6 @@ saveBtn.onclick=()=>{
    VALIDATE MAIN FORM
    ========================================================= */
 
-
-   
-const validate = () => {
-
-    if (missingPageData.length) {
-        status.textContent =
-            "Missing page data: " +
-            missingPageData.join(", ") +
-            ". Check the browser console.";
-
-        console.error(
-            "Cannot generate output because page data is missing.",
-            {
-                missingPageData,
-                disputeNumber,
-                disputeStatus,
-                ids
-            }
-        );
-
-        return false;
-    }
-
-    // Keep all your existing validation code below this point.
-
 const validate=()=>{
 
     if(!currentName){
@@ -4096,23 +4063,25 @@ const buildRow=(
 ];
 
 
-   if(row.length!==20){
+    if(row.length!==20){
 
-    console.error(
-        "ERROR: ROW DOES NOT HAVE 20 COLUMNS!",
-        row,
-        "Length:",
-        row.length
+        console.error(
+           "ERROR: ROW DOES NOT HAVE 20 COLUMNS!",
+            row,
+            "Length:",
+            row.length
+        );
+
+    }
+
+
+    console.log(
+        "FINAL 19-COLUMN ROW",
+        row
     );
 
-}
 
-console.log(
-    "FINAL 20-COLUMN ROW",
-    row
-);
-
-return row.join("\t");
+    return row.join("\t");
 
 };
 
@@ -4468,7 +4437,7 @@ continueBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:S`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
@@ -4719,18 +4688,5 @@ stateInput.focus();
    ========================================================= */
 
 await popup();
-
-} catch (error) {
-    console.error(
-        "DISPUTE SCRIPT FAILED:",
-        error
-    );
-
-    alert(
-        "Dispute script failed.\n\n" +
-        (error?.message || String(error)) +
-        "\n\nOpen DevTools → Console for details."
-    );
-}
 
 })();
