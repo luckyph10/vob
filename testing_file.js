@@ -4214,7 +4214,7 @@ noBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"T":""} — COLUMNS A:T`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
@@ -4432,7 +4432,7 @@ continueBtn.onclick=async()=>{
     showCopyMessage(
 
         copied
-        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"T":""} — COLUMNS A:T`
+        ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
