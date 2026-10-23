@@ -161,6 +161,9 @@ const newColumnBValue =
     ?.trim()
     || "";
 
+console.log("newColumnBValue =", newColumnBValue);
+alert("newColumnBValue = " + newColumnBValue);
+
 /* =========================================================
    GET IDS
    ========================================================= */
