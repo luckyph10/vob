@@ -4058,7 +4058,7 @@ const buildRow=(
 ];
 
 
-    if(row.length!==20)
+   if(row.length!==20){
 
     console.error(
         "ERROR: ROW DOES NOT HAVE 20 COLUMNS!",
