@@ -1,4 +1,5 @@
 (async()=>{
+try {
 
 /* =========================================================
    DISPUTE USER NAME
@@ -287,28 +288,40 @@ const arbitIdNumber =
    VALIDATION
    ========================================================= */
 
-if(
-    !disputeNumber||
-    !disputeStatus||
-    !ids.length
-){
 
-    console.error(
-        "Missing required page data.",
+/* =========================================================
+   VALIDATION — DO NOT EXIT BEFORE SHOWING THE POPUP
+   ========================================================= */
+
+const missingPageData = [];
+
+if (!disputeNumber) {
+    missingPageData.push("Dispute Number");
+}
+
+if (!disputeStatus) {
+    missingPageData.push("Dispute Status");
+}
+
+if (!ids.length) {
+    missingPageData.push("ARBIT / APP IDs");
+}
+
+if (missingPageData.length) {
+    console.warn(
+        "Some page data could not be found. The popup will still open.",
         {
+            missingPageData,
             disputeNumber,
             disputeStatus,
+            columnJValue,
+            columnKPageValue,
+            newColumnBValue,
             ids,
-            arbitLinks
+            arbitLinks,
+            pageUrl: location.href
         }
     );
-
-    alert(
-        "Unable to continue.\n\n"+
-        "Missing Dispute Number, Dispute Status, or IDs."
-    );
-
-    return;
 }
 
 
@@ -3739,6 +3752,31 @@ saveBtn.onclick=()=>{
    VALIDATE MAIN FORM
    ========================================================= */
 
+
+   
+const validate = () => {
+
+    if (missingPageData.length) {
+        status.textContent =
+            "Missing page data: " +
+            missingPageData.join(", ") +
+            ". Check the browser console.";
+
+        console.error(
+            "Cannot generate output because page data is missing.",
+            {
+                missingPageData,
+                disputeNumber,
+                disputeStatus,
+                ids
+            }
+        );
+
+        return false;
+    }
+
+    // Keep all your existing validation code below this point.
+
 const validate=()=>{
 
     if(!currentName){
@@ -4681,5 +4719,18 @@ stateInput.focus();
    ========================================================= */
 
 await popup();
+
+} catch (error) {
+    console.error(
+        "DISPUTE SCRIPT FAILED:",
+        error
+    );
+
+    alert(
+        "Dispute script failed.\n\n" +
+        (error?.message || String(error)) +
+        "\n\nOpen DevTools → Console for details."
+    );
+}
 
 })();
