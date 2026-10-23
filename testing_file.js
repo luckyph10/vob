@@ -4075,16 +4075,10 @@ const buildRow=(
     }
 
 
-    console.log(
-        "FINAL 19-COLUMN ROW",
-        row
-    );
-
-
-    return row.join("\t");
-
-};
-
+   console.log(
+    "FINAL 20-COLUMN ROW",
+    row
+);
 
 /* =========================================================
    BUILD OUTPUT
@@ -4220,6 +4214,7 @@ noBtn.onclick=async()=>{
 
         copied
         ?`✅ COPIED ${rowCount} ROW${rowCount!==1?"S":""} — COLUMNS A:T`
+
         :`❌ COPY FAILED — CLICK COPY AGAIN`,
 
         output
